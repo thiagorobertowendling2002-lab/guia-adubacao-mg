@@ -18,6 +18,11 @@
   --tinta: #14402b;
   --tinta-2: #2f5d45;
   --folha: #5fa86f;
+  --folha-2: #3d7a50;
+  --laranja: #e8892b;
+  --laranja-2: #c96a14;
+  --grao: #dcab66;
+  --grao-2: #8a5226;
   --sinal: #b92e15;
   --sinal-claro: #fbe9e3;
   --osso: #f2f5ef;
@@ -424,8 +429,141 @@ main {
 .f-sinal {
   fill: var(--sinal);
 }
+.f-folha2 {
+  fill: var(--folha-2);
+}
+.f-laranja {
+  fill: var(--laranja);
+}
+.f-laranja2 {
+  fill: var(--laranja-2);
+}
+.f-grao {
+  fill: var(--grao);
+}
+.f-trama {
+  fill: var(--amarelo-trama);
+}
+.f-tinta {
+  fill: var(--tinta);
+}
+.tr3 {
+  stroke: var(--tinta);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+.risca {
+  stroke: var(--grao-2);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.seda {
+  stroke: var(--amarelo-trama);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.grao-m {
+  fill: var(--amarelo);
+  stroke: var(--grao-2);
+  stroke-width: 0.9;
+}
 .f-osso {
   fill: var(--osso);
+}
+
+/* Movimento dos emblemas: balanço lento sempre; vivo no hover, no foco e no saco escolhido. */
+.saco-svg [class^='emb-'] {
+  transform-box: fill-box;
+  animation-duration: var(--dur, 4.5s);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-delay: var(--d, 0s);
+}
+.saco:hover,
+.saco-radio:checked + .saco-corpo,
+.saco-radio:focus-visible + .saco-corpo {
+  --vivo: 1;
+}
+.emb-sway {
+  transform-origin: 8% 92%;
+  animation-name: balanca;
+}
+.emb-folha {
+  transform-origin: 50% 100%;
+  animation-name: folheia;
+}
+.emb-fruto {
+  transform-origin: 50% 0;
+  animation-name: pende;
+}
+.emb-casca-e,
+.emb-casca-fe {
+  transform-origin: 100% 100%;
+  animation-name: casca-e;
+}
+.emb-casca-d,
+.emb-casca-fd {
+  transform-origin: 0 100%;
+  animation-name: casca-d;
+}
+.emb-seda {
+  transform-origin: 50% 100%;
+  animation-name: folheia;
+}
+.emb-vagem {
+  transform-origin: 90% 10%;
+  animation-name: balanca;
+  --amp: 1.6deg;
+}
+.emb-feijao {
+  animation-name: pula;
+  animation-duration: 3.2s;
+}
+.emb-fruta {
+  transform-origin: 50% 100%;
+  animation-name: quica;
+}
+.emb-fatia {
+  transform-origin: 50% 50%;
+  animation-name: gira;
+}
+.saco:hover [class^='emb-'],
+.saco-radio:checked + .saco-corpo [class^='emb-'],
+.saco-radio:focus-visible + .saco-corpo [class^='emb-'] {
+  --dur: 1.7s;
+  --amp: 4deg;
+}
+@keyframes balanca {
+  0%, 100% { transform: rotate(calc(var(--amp, 2deg) * -1)); }
+  50% { transform: rotate(var(--amp, 2deg)); }
+}
+@keyframes folheia {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(4deg); }
+}
+@keyframes pende {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(5deg); }
+}
+@keyframes casca-e {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg); }
+}
+@keyframes casca-d {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(5deg); }
+}
+@keyframes pula {
+  0%, 70%, 100% { transform: translateY(0); }
+  82% { transform: translateY(-2.4px); }
+}
+@keyframes quica {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1.5px) scale(1.02); }
+}
+@keyframes gira {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(8deg); }
 }
 
 /* --------------------------------------------------------------- carimbos */

@@ -55,33 +55,78 @@
   const SETA = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const SETA_VOLTA = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 12H6M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+  // Emblemas desenhados à mão em SVG, em tinta chapada com uma segunda cor de sombra (serigrafia de duas passadas).
+  // Os grupos com classe emb-* recebem a animação do CSS.
+  const graosDeMilho = () => {
+    const porLinha = [2, 3, 4, 4, 4, 4, 3];
+    let s = '';
+    porLinha.forEach((n, r) => {
+      const y = 16 + r * 5.6;
+      for (let c = 0; c < n; c++) {
+        const x = 32 + (c - (n - 1) / 2) * 5.6;
+        s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" class="grao-m"/>`;
+      }
+    });
+    return s;
+  };
+
   const EMBLEMAS = {
     cafe: `
-      <path d="M9 53 C22 42 33 35 52 12" class="tr" fill="none"/>
-      <path d="M27 41 C17 33 20 21 34 22 C36 31 33 38 27 41Z" class="tr f-verde"/>
-      <path d="M40 27 C44 17 56 18 56 29 C48 32 43 31 40 27Z" class="tr f-verde"/>
-      <circle cx="19" cy="51" r="6.5" class="tr f-sinal"/>
-      <circle cx="31" cy="54" r="6.5" class="tr f-sinal"/>
-      <circle cx="41" cy="46" r="6" class="tr f-sinal"/>
-      <path d="M17 49 C18 47 20 47 21 48" class="fino-claro" fill="none"/>`,
+      <g class="emb-sway">
+        <path d="M5 57 C20 46 36 40 58 19" class="tr" fill="none"/>
+        <g class="emb-folha" style="--d:0s">
+          <path d="M31 40 C20 33 19 20 34 17 C41 27 39 35 31 40Z" class="tr f-folha"/>
+          <path d="M34 17 C41 27 39 35 31 40 C34 31 35 24 34 17Z" class="f-folha2"/>
+          <path d="M31 40 C31 31 32 24 34 17" class="fino-claro" fill="none"/>
+        </g>
+        <g class="emb-folha" style="--d:.5s">
+          <path d="M45 29 C45 16 58 13 61 21 C60 30 52 33 45 29Z" class="tr f-folha"/>
+          <path d="M61 21 C60 30 52 33 45 29 C52 27 58 25 61 21Z" class="f-folha2"/>
+          <path d="M45 29 C51 25 57 22 61 21" class="fino-claro" fill="none"/>
+        </g>
+        <g class="emb-folha" style="--d:1s">
+          <path d="M15 49 C8 43 9 34 18 33 C23 39 21 46 15 49Z" class="tr f-folha"/>
+          <path d="M18 33 C23 39 21 46 15 49 C17 43 18 38 18 33Z" class="f-folha2"/>
+        </g>
+        <path d="M22 48 L21 53 M31 43 L31 51 M39 38 L40 44" class="fino" fill="none"/>
+        <g class="emb-fruto" style="--d:0s"><circle cx="21" cy="57" r="6" class="tr f-sinal"/><path d="M18 55 C18 53.5 19.5 52.5 21 52.7" class="fino-claro" fill="none"/><circle cx="21" cy="62.3" r="0.9" class="f-tinta"/></g>
+        <g class="emb-fruto" style="--d:.35s"><circle cx="31" cy="55" r="6" class="tr f-sinal"/><path d="M28 53 C28 51.5 29.5 50.5 31 50.7" class="fino-claro" fill="none"/></g>
+        <g class="emb-fruto" style="--d:.7s"><circle cx="41" cy="48" r="5.6" class="tr f-sinal"/><path d="M38.2 46.2 C38.2 44.8 39.6 43.9 41 44.1" class="fino-claro" fill="none"/></g>
+      </g>`,
     milho: `
-      <path d="M24 55 C10 51 7 34 11 21 C20 29 26 40 29 55Z" class="tr f-verde"/>
-      <path d="M40 55 C54 51 57 34 53 21 C44 29 38 40 35 55Z" class="tr f-verde"/>
-      <path d="M32 6 C43 14 45 34 39 52 L25 52 C19 34 21 14 32 6Z" class="tr f-amarelo"/>
-      <path d="M32 12 V50 M26 22 H38 M25 32 H39 M26 42 H38" class="fino" fill="none"/>`,
+      <g class="emb-casca-e"><path d="M25 56 C9 52 5 33 10 18 C19 27 25 40 30 57Z" class="tr f-folha"/><path d="M10 18 C19 27 25 40 30 57 C20 44 14 31 10 18Z" class="f-folha2"/><path d="M26 54 C17 44 13 32 11 22" class="fino-claro" fill="none"/></g>
+      <g class="emb-casca-d"><path d="M39 56 C55 52 59 33 54 18 C45 27 39 40 34 57Z" class="tr f-folha"/><path d="M54 18 C45 27 39 40 34 57 C44 44 50 31 54 18Z" class="f-folha2"/><path d="M38 54 C47 44 51 32 53 22" class="fino-claro" fill="none"/></g>
+      <path d="M32 7 C43 12 45 32 40 53 L24 53 C19 32 21 12 32 7Z" class="tr f-trama"/>
+      ${graosDeMilho()}
+      <g class="emb-seda"><path d="M32 8 C30 4 27 2 24 3 M32 8 C33 4 36 1 40 2 M32 8 C32 5 32 3 33 0" class="seda" fill="none"/></g>
+      <g class="emb-casca-fe"><path d="M26 57 C17 51 17 40 22 33 C26 41 29 49 32 57Z" class="tr f-folha"/><path d="M22 33 C26 41 29 49 32 57 C26 49 23 41 22 33Z" class="f-folha2"/></g>
+      <g class="emb-casca-fd"><path d="M38 57 C47 51 47 40 42 33 C38 41 35 49 32 57Z" class="tr f-folha"/><path d="M42 33 C38 41 35 49 32 57 C38 49 41 41 42 33Z" class="f-folha2"/></g>`,
     feijao: `
-      <path d="M6 47 C8 26 28 8 58 10 C59 37 41 57 14 55 C9 55 6 52 6 47Z" class="tr f-verde"/>
-      <path d="M12 50 C24 41 38 29 52 15" class="fino" fill="none"/>
-      <ellipse cx="21" cy="41" rx="6.5" ry="4.8" transform="rotate(-40 21 41)" class="tr f-sinal"/>
-      <ellipse cx="32" cy="31" rx="6.5" ry="4.8" transform="rotate(-40 32 31)" class="tr f-sinal"/>
-      <ellipse cx="43" cy="22" rx="6.5" ry="4.8" transform="rotate(-40 43 22)" class="tr f-sinal"/>
-      <path d="M18 39 C19 37 21 36 23 37" class="fino-claro" fill="none"/>`,
+      <g class="emb-vagem">
+        <path d="M4 45 C5 24 26 7 59 8 C61 37 43 58 14 57 C8 57 4 52 4 45Z" class="tr f-folha2"/>
+        <path d="M10 44 C11 28 28 14 52 14 C52 36 38 50 16 51 C12 51 10 48 10 44Z" class="f-folha"/>
+        <path d="M59 8 C62 5 63 3 62 1" class="tr" fill="none"/>
+      </g>
+      <g class="emb-feijao" style="--d:0s"><ellipse cx="19" cy="43" rx="6.6" ry="4.6" transform="rotate(-42 19 43)" class="tr3 f-grao"/><path d="M15 42 C17 44.5 20 45.5 23 44.5 M16 39.5 C18 41 20 41.5 22 40.5" class="risca" fill="none"/><ellipse cx="21.5" cy="39.5" rx="1.3" ry="0.8" transform="rotate(-42 21.5 39.5)" class="f-osso"/></g>
+      <g class="emb-feijao" style="--d:.25s"><ellipse cx="29" cy="35" rx="6.6" ry="4.6" transform="rotate(-42 29 35)" class="tr3 f-grao"/><path d="M25 34 C27 36.5 30 37.5 33 36.5 M26 31.5 C28 33 30 33.5 32 32.5" class="risca" fill="none"/><ellipse cx="31.5" cy="31.5" rx="1.3" ry="0.8" transform="rotate(-42 31.5 31.5)" class="f-osso"/></g>
+      <g class="emb-feijao" style="--d:.5s"><ellipse cx="39" cy="27" rx="6.6" ry="4.6" transform="rotate(-42 39 27)" class="tr3 f-grao"/><path d="M35 26 C37 28.5 40 29.5 43 28.5 M36 23.5 C38 25 40 25.5 42 24.5" class="risca" fill="none"/><ellipse cx="41.5" cy="23.5" rx="1.3" ry="0.8" transform="rotate(-42 41.5 23.5)" class="f-osso"/></g>
+      <g class="emb-feijao" style="--d:.75s"><ellipse cx="48" cy="20" rx="5.2" ry="3.7" transform="rotate(-42 48 20)" class="tr3 f-grao"/><path d="M45 19 C47 21 49 21.5 51.5 20.5" class="risca" fill="none"/></g>`,
     frutas: `
-      <circle cx="30" cy="36" r="22" class="tr f-amarelo"/>
-      <circle cx="30" cy="36" r="16" class="fino f-osso"/>
-      <path d="M30 36 V20 M30 36 L44 28 M30 36 L44 44 M30 36 V52 M30 36 L16 44 M30 36 L16 28" class="fino" fill="none"/>
-      <path d="M43 15 C47 6 57 6 60 8 C58 18 50 21 43 15Z" class="tr f-verde"/>`
+      <g class="emb-fruta">
+        <circle cx="37" cy="36" r="21" class="tr f-laranja"/>
+        <path d="M37 57 C52 57 58 44 56 33 C52 46 46 52 37 53Z" class="f-laranja2"/>
+        <path d="M26 24 C29 19 34 17 39 17.5" class="fino-claro" fill="none"/>
+        <circle cx="30" cy="40" r="0.9" class="f-laranja2"/><circle cx="40" cy="30" r="0.9" class="f-laranja2"/><circle cx="45" cy="42" r="0.9" class="f-laranja2"/><circle cx="35" cy="48" r="0.9" class="f-laranja2"/><circle cx="46" cy="26" r="0.9" class="f-laranja2"/>
+      </g>
+      <g class="emb-folha" style="--d:.2s"><path d="M37 16 C31 6 38 1 47 2 C48 10 43 16 37 16Z" class="tr f-folha"/><path d="M47 2 C48 10 43 16 37 16 C42 12 45 7 47 2Z" class="f-folha2"/><path d="M37 16 C41 11 44 7 47 2" class="fino-claro" fill="none"/></g>
+      <path d="M37 17 L37 14" class="tr" fill="none"/>
+      <g class="emb-fatia">
+        <circle cx="19" cy="45" r="15" class="tr f-laranja"/>
+        <circle cx="19" cy="45" r="11.5" class="fino f-osso"/>
+        <g class="emb-gomos"><path d="M19 45 V34 M19 45 L27 37 M19 45 L30 45 M19 45 L27 53 M19 45 V56 M19 45 L11 53 M19 45 L8 45 M19 45 L11 37" class="fino" fill="none"/><circle cx="19" cy="45" r="1.8" class="f-osso fino"/></g>
+      </g>`
   };
+
   const CORES_SACO = { cafe: 'f-amarelo', milho: 'f-verde', feijao: 'f-osso', frutas: 'f-amarelo' };
 
   const sacoSVG = (id) => `
