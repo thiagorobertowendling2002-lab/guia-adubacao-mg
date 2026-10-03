@@ -1,0 +1,124 @@
+{
+  "title": "Escolha o mundo visual do Guia de Adubação",
+  "question": "O sorteio designou a Xilogravura de Cordel. Mantenha, escolha uma alternativa ou sorteie de novo.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Folheto de Cordel",
+      "kicker": "O SORTEIO",
+      "lineage": "cordéis e xilogravuras populares brasileiras",
+      "thesis": "A sua lavoura impressa como folheto de feira: capa entalhada da cultura e a receita do solo em fichas de números.",
+      "palette": ["#f4c20d", "#e5307a", "#1f8a4c", "#14110f", "#f6efdc"],
+      "materials": ["xilogravura", "papel-jornal colorido", "tipo de madeira"],
+      "viewport": "Capa de folheto em papel amarelo ou rosa, xilogravura da cultura escolhida e o título em letras entalhadas; o formulário vira ficha em papel liso logo abaixo.",
+      "risk": "O entalhe pode competir com os números; por isso formulário e resultados ficam em papel liso, sem textura.",
+      "raised": [
+        {
+          "from": "Alta densidade japonesa",
+          "raise": "Cada parada do cronograma é um módulo de borda fina com aba de título, números compactos e nada de cartão inflado."
+        },
+        {
+          "from": "Grade de Crouwel",
+          "raise": "Uma grade modular visível de verdade sustenta as molduras entalhadas, que encaixam em células inteiras."
+        },
+        {
+          "from": "Encarte de fita cassete",
+          "raise": "O 'por quê' de cada número vai como anotação manuscrita na margem, em outra voz, esclarecendo sem poluir."
+        }
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "Saco de Adubo",
+      "kicker": "ESCOLHA DO IMPECCABLE",
+      "lineage": "embalagens de adubo e de semente",
+      "thesis": "A receita impressa como saco de adubo: N, P e K em círculos gigantes e as etapas como carimbo de lote.",
+      "palette": ["#f2b705", "#1d4a2f", "#c8102e", "#fffdf5"],
+      "materials": ["serigrafia", "ráfia e papel kraft"],
+      "viewport": "O número grande de N-P-K em círculos sobre faixa de cor viva, com o nome da cultura em letra de caixa pesada.",
+      "risk": "É onde qualquer execução do agro aterrissa: fácil de parecer mais um rótulo de insumo."
+    },
+    {
+      "id": "challenger-signals-instruments-split-flap-concourse",
+      "label": "Painel da Rodoviária",
+      "verdict": "competitive",
+      "lineage": "painéis de partida de rodoviária e estação",
+      "thesis": "O cronograma como painel de partidas: cada operação é uma linha, ordenada pela data.",
+      "palette": ["#14161a", "#f5f5f0", "#e8a317", "#8f2a1f"],
+      "materials": ["aletas de plástico", "moldura de aço escovado"],
+      "viewport": "Linhas fixas com data, operação, produto e dose; as aletas giram ao trocar de cultura.",
+      "case": "Segura a clareza do produto (data primeiro) e perde um pouco em identificação com o produtor.",
+      "risk": "Pode soar frio para um público que pediu algo lúdico.",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-split-flap-concourse-hero.webp"
+    },
+    {
+      "id": "challenger-rw-manual-acetate-tab-board",
+      "label": "Manual com Abas",
+      "verdict": "competitive",
+      "lineage": "manuais de software de caixa com divisórias coloridas",
+      "thesis": "O guia como livro aberto com abas por cor: uma aba para solo, outra para cada etapa do ano.",
+      "palette": ["#e8641c", "#f2c500", "#2f8f4e", "#1e3a8a", "#f4f1e8"],
+      "materials": ["acetato fosco", "cartão de divisória"],
+      "viewport": "Régua de abas na borda; a aba atual avança e vira o fundo da página.",
+      "case": "Casa bem com o fato de a fonte ser um manual; perde em identificação com o público.",
+      "risk": "Pode parecer manual técnico demais para o produtor.",
+      "hero": "https://impeccable.style/worlds/cards/rw-manual-acetate-tab-board-hero.webp"
+    },
+    {
+      "id": "challenger-vernacular-ephemera-cassette-j-card",
+      "label": "Encarte de Fita",
+      "verdict": "declined",
+      "lineage": "encartes de fita cassete escritos à mão",
+      "palette": ["#2a4fa0", "#f7f5ee", "#c8321e"],
+      "materials": ["caneta esferográfica", "papel pautado"],
+      "case": "Perde nos dois eixos: o público não se reconhece e o lado A/B não organiza datas.",
+      "kept": "A anotação manuscrita na margem, para explicar o 'por quê'.",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-cassette-j-card-hero.webp"
+    },
+    {
+      "id": "challenger-japanese-high-density-web",
+      "label": "Mosaico Japonês",
+      "verdict": "declined",
+      "lineage": "sites japoneses de alta densidade",
+      "palette": ["#ffffff", "#111111", "#d6001c", "#9aa3ad"],
+      "materials": ["módulos com filete", "abas vermelhas"],
+      "case": "Perde: a densidade assusta quem pediu 'simples e direto'.",
+      "kept": "Módulos de borda fina com aba de título, para compactar os números.",
+      "hero": "https://impeccable.style/worlds/cards/japanese-high-density-web-hero.webp"
+    },
+    {
+      "id": "challenger-crouwel-grid-specimen",
+      "label": "Grade de Crouwel",
+      "verdict": "declined",
+      "lineage": "cartazes tipográficos de Wim Crouwel",
+      "palette": ["#ffffff", "#1a3df0", "#14110f"],
+      "materials": ["papel quadriculado", "letras construídas em célula"],
+      "case": "Perde: a tipografia monumental não carrega o ato de preencher um laudo.",
+      "kept": "A grade modular visível como disciplina de espaçamento.",
+      "hero": "https://impeccable.style/worlds/cards/crouwel-grid-specimen-hero.webp"
+    },
+    {
+      "id": "challenger-pop-culture-shelf-vertical-video-feed-surface",
+      "label": "Feed Vertical",
+      "verdict": "declined",
+      "lineage": "feeds de vídeo vertical",
+      "palette": ["#000000", "#ffffff"],
+      "materials": ["mídia em tela cheia", "ícones brancos"],
+      "case": "Perde: um item por tela não serve a quem precisa comparar números.",
+      "kept": "Nada além de que, no celular, uma etapa por vez pode ocupar a tela.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-vertical-video-feed-surface-hero.webp"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code", "toggle": false },
+  "canon": true,
+  "canonCard": {
+    "label": "A calculadora padrão",
+    "thesis": "O que a categoria entrega, executado com todo o cuidado: formulário claro, resultado em cartões e linha do tempo.",
+    "palette": ["#ffffff", "#1f2937", "#2f7d4f"],
+    "materials": ["grade limpa", "ícones simples"],
+    "viewport": "Formulário em passos e resultado em cartões, como o visitante espera.",
+    "risk": "Indistinguível dos concorrentes, por definição."
+  },
+  "steer": true
+}

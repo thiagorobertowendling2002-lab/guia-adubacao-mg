@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guia de Adubação MG</title>
+  <meta name="description" content="Digite o laudo do solo, escolha a lavoura e a data de plantio. O guia mostra a calagem, a gessagem, a adubação de plantio e de cobertura e as datas de cada aplicação, com base no manual da 5ª Aproximação de Minas Gerais.">
+  <meta name="theme-color" content="#F2C230">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/estilo.css">
+  <script defer src="js/dados-base.js"></script>
+  <script defer src="js/dados-culturas.js"></script>
+  <script defer src="js/dados-manejo.js"></script>
+  <script defer src="js/motor.js"></script>
+  <script defer src="js/calendario.js"></script>
+  <script defer src="js/produtos.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <a class="pular" href="#principal">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <div class="topo-miolo">
+      <h1 class="marca">Guia de Adubação <span class="marca-mg">MG</span></h1>
+      <p class="marca-frase">Leia o laudo do solo e saiba quanto aplicar, e quando.</p>
+    </div>
+  </header>
+
+  <nav class="cinto" aria-label="Etapas do guia">
+    <ol class="cinto-lista" id="cinto">
+      <li><button type="button" class="parada" data-passo="1" aria-current="step"><span class="parada-ponto" aria-hidden="true"></span><span class="parada-nome">A lavoura</span></button></li>
+      <li><button type="button" class="parada" data-passo="2"><span class="parada-ponto" aria-hidden="true"></span><span class="parada-nome">O laudo</span></button></li>
+      <li><button type="button" class="parada" data-passo="3"><span class="parada-ponto" aria-hidden="true"></span><span class="parada-nome">O plantio</span></button></li>
+    </ol>
+  </nav>
+
+  <main id="principal">
+    <noscript>
+      <p class="aviso-js">Este guia faz as contas no seu aparelho e precisa de JavaScript ligado para funcionar.</p>
+    </noscript>
+
+    <section class="painel" id="assistente" aria-label="Assistente de três passos">
+      <div class="passo" id="passo-1" data-passo="1"></div>
+      <div class="passo" id="passo-2" data-passo="2" hidden></div>
+      <div class="passo" id="passo-3" data-passo="3" hidden></div>
+    </section>
+
+    <div id="resultado" class="resultado" hidden tabindex="-1"></div>
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape-miolo">
+      <h2 class="rodape-titulo">De onde vêm os números</h2>
+      <p>
+        Tudo sai do manual <cite>Recomendações para o uso de corretivos e fertilizantes em Minas Gerais – 5ª Aproximação</cite>,
+        da Comissão de Fertilidade do Solo do Estado de Minas Gerais (CFSEMG), Viçosa, 1999. O manual autoriza a reprodução
+        parcial com citação da fonte. Este site traz só as regras e as doses que usa, nunca o texto do livro, e cita a seção
+        e a página de cada resultado.
+      </p>
+      <p>
+        É um guia de apoio para ler o laudo, não substitui o agrônomo. O manual tem mais de vinte anos e vale para Minas Gerais.
+        Datas marcadas como estimadas são conversões que fizemos de prazos em meses ou de fases da planta, que o manual não dá em dias.
+      </p>
+      <p class="rodape-pe">Código aberto. Fonte tipográfica Archivo, licença SIL Open Font.</p>
+    </div>
+  </footer>
+</body>
+</html>

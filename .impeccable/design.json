@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-03T18:00:00Z",
+  "title": "Design System: Guia de Adubação MG",
+  "extensions": {
+    "colorMeta": {
+      "amarelo": { "role": "primary", "displayName": "Bag Yellow", "canonical": "#f2c230", "tonalRamp": ["#4a3a07", "#6e5710", "#927619", "#b69422", "#d9a91a", "#f2c230", "#f7d86f", "#faebb0"] },
+      "amarelo-claro": { "role": "neutral", "displayName": "Pale Yellow", "canonical": "#faebb0", "tonalRamp": ["#5a4e1b", "#7d6e28", "#a08d36", "#c2ab4a", "#dcc66a", "#ebd88a", "#faebb0", "#fdf5d6"] },
+      "amarelo-trama": { "role": "neutral", "displayName": "Weave Gold", "canonical": "#d9a91a", "tonalRamp": ["#3d2f05", "#5e4909", "#80640e", "#a28012", "#c29716", "#d9a91a", "#e8c458", "#f4dd96"] },
+      "tinta": { "role": "primary", "displayName": "Field-Green Ink", "canonical": "#14402b", "tonalRamp": ["#14402b", "#1d5a3b", "#2f5d45", "#4a7a60", "#6f9a82", "#97b9a5", "#c0d6c9", "#e2ece6"] },
+      "tinta-hover": { "role": "primary", "displayName": "Ink Hover", "canonical": "#1d5a3b", "tonalRamp": ["#0c2619", "#14402b", "#1d5a3b", "#2f7550", "#4a9069", "#79b08f", "#aecdbb", "#dcebe2"] },
+      "tinta-2": { "role": "neutral", "displayName": "Soft Green Ink", "canonical": "#2f5d45", "tonalRamp": ["#14402b", "#1d5a3b", "#2f5d45", "#4a7a60", "#6f9a82", "#97b9a5", "#c0d6c9", "#e2ece6"] },
+      "folha": { "role": "secondary", "displayName": "Leaf Green", "canonical": "#5fa86f", "tonalRamp": ["#1a3a22", "#265233", "#356f46", "#468b59", "#5fa86f", "#85c092", "#acd6b5", "#d5ebd9"] },
+      "sinal": { "role": "secondary", "displayName": "Signal Red", "canonical": "#b92e15", "tonalRamp": ["#3a0f06", "#5c180a", "#7e200e", "#9e2812", "#b92e15", "#d4553b", "#e68d7a", "#f6c9bf"] },
+      "sinal-claro": { "role": "neutral", "displayName": "Alert Tint", "canonical": "#fbe9e3", "tonalRamp": ["#5c3a31", "#85574b", "#a8766a", "#c79689", "#dbb5aa", "#eacdc4", "#fbe9e3", "#fdf4f1"] },
+      "osso": { "role": "neutral", "displayName": "Cool Paper", "canonical": "#f2f5ef", "tonalRamp": ["#3b413a", "#5d655b", "#80897d", "#a2ac9f", "#c3cbc0", "#dde3d8", "#f2f5ef", "#fafcf8"] },
+      "osso-2": { "role": "neutral", "displayName": "Paper Shade", "canonical": "#e2e8dd", "tonalRamp": ["#3a4136", "#596253", "#7a8574", "#9ba695", "#bcc6b6", "#d0d9ca", "#e2e8dd", "#f0f4ec"] },
+      "papel": { "role": "neutral", "displayName": "Paper White", "canonical": "#ffffff", "tonalRamp": ["#404040", "#666666", "#8c8c8c", "#b3b3b3", "#d1d1d1", "#e6e6e6", "#f5f5f5", "#ffffff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page title in the top band. Archivo 900 at width 125%, uppercase." },
+      "headline": { "displayName": "Headline", "purpose": "Step titles, result block titles and the label title. Balanced wrapping." },
+      "title": { "displayName": "Title", "purpose": "Legends, row heads, milestone titles, summaries; crop names on bags at 1.35rem." },
+      "body": { "displayName": "Body", "purpose": "Running text, 17px, tabular numerals, max 68ch." },
+      "numeral": { "displayName": "Numeral", "purpose": "Roundel, guarantee and derived values in expanded black." },
+      "label": { "displayName": "Label", "purpose": "Stamps, tags, table heads and month abbreviations in condensed tracked caps." }
+    },
+    "shadows": [
+      { "name": "chosen-bag", "value": "drop-shadow(6px 6px 0 #14402b)", "purpose": "Selected crop bag only. Contract-sanctioned screenprint depth; floor-listed default, not a rule for future surfaces." },
+      { "name": "roundel", "value": "5px 5px 0 #14402b", "purpose": "N, P2O5, K2O roundels (4px 4px at 460px and below). Contract-sanctioned; floor-listed default, not a rule for future surfaces." },
+      { "name": "focus-ring", "value": "outline 3px solid #14402b, offset 3px; box-shadow 0 0 0 6px #f2c230", "purpose": "Double ring on every :focus-visible; off only on programmatic focus targets." }
+    ],
+    "motion": [
+      { "name": "expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Exponential ease-out for bag lift, stamp thump, chevron rotation, belt stop fill." },
+      { "name": "batida", "value": "420ms expo, 90ms stagger, 300ms delay", "purpose": "The one motion moment: stamps thump onto the Modo de usar list. Disabled under prefers-reduced-motion." },
+      { "name": "state-fast", "value": "160ms ease-out", "purpose": "Hover color changes on chips and buttons." }
+    ],
+    "breakpoints": [
+      { "name": "narrow", "value": "460px" },
+      { "name": "phone", "value": "560px" },
+      { "name": "tablet", "value": "720px" },
+      { "name": "wide", "value": "900px" },
+      { "name": "container", "value": "1040px max width" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Green action button, bottom right of each panel; dashed and greyed with a visible reason when disabled.",
+      "html": "<button class=\"ds-botao\">Continuar</button> <button class=\"ds-botao\" disabled>Continuar</button>",
+      "css": ".ds-botao { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 24px; background: var(--tinta, #14402b); color: var(--osso, #f2f5ef); border: 3px solid var(--tinta, #14402b); border-radius: 6px; font: 850 1.08rem 'Archivo', system-ui, sans-serif; font-stretch: 112%; letter-spacing: 0.01em; cursor: pointer; transition: background-color 160ms ease-out, transform 160ms cubic-bezier(0.16,1,0.3,1); } .ds-botao:hover:not(:disabled) { background: #1d5a3b; } .ds-botao:active:not(:disabled) { transform: translateY(2px); } .ds-botao:focus-visible { outline: 3px solid #14402b; outline-offset: 3px; box-shadow: 0 0 0 6px #f2c230; } .ds-botao:disabled { background: #e2e8dd; color: #2f5d45; border-style: dashed; cursor: not-allowed; }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Two-line choice control, inverts to green when selected.",
+      "html": "<span class=\"ds-chip\">Nome<small>detalhe</small></span> <span class=\"ds-chip ds-on\">Nome<small>detalhe</small></span>",
+      "css": ".ds-chip { display: inline-flex; flex-direction: column; justify-content: center; min-height: 56px; min-width: 150px; padding: 8px 16px; border: 3px solid #14402b; border-radius: 6px; background: #fff; color: #14402b; font: 800 1rem 'Archivo', system-ui, sans-serif; font-stretch: 108%; cursor: pointer; transition: background-color 160ms ease-out; } .ds-chip small { font-size: 0.86rem; font-weight: 450; font-stretch: 100%; } .ds-chip:hover { background: #e2e8dd; } .ds-chip.ds-on { background: #14402b; color: #f2f5ef; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "52px field with attached unit cap; invalid state turns red with alert tint.",
+      "html": "<div class=\"ds-entrada\"><input class=\"ds-campo\" placeholder=\"5,8\"><span class=\"ds-un\">cmolc/dm3</span></div>",
+      "css": ".ds-entrada { display: flex; } .ds-campo { width: 100%; min-width: 0; min-height: 52px; padding: 0 14px; border: 3px solid #14402b; border-right: 0; border-radius: 6px 0 0 6px; background: #fff; color: #14402b; font: 650 1.1rem 'Archivo', system-ui, sans-serif; } .ds-campo::placeholder { color: #2f5d45; opacity: 1; font-weight: 450; } .ds-campo:focus-visible { outline: 3px solid #14402b; outline-offset: 3px; box-shadow: 0 0 0 6px #f2c230; } .ds-campo[aria-invalid='true'] { border-color: #b92e15; background: #fbe9e3; } .ds-un { display: flex; align-items: center; padding: 0 12px; border: 3px solid #14402b; border-radius: 0 6px 6px 0; background: #e2e8dd; font: 750 0.86rem 'Archivo', system-ui, sans-serif; white-space: nowrap; }"
+    },
+    {
+      "name": "Stamp",
+      "kind": "custom",
+      "refersTo": "stamp",
+      "description": "Rotated condensed-caps stamp; red for now or alert, green for upcoming, dashed for past.",
+      "html": "<span class=\"ds-carimbo\">Agora</span> <span class=\"ds-carimbo ds-prox\">Próximo</span> <span class=\"ds-carimbo ds-pass\">Passado</span>",
+      "css": ".ds-carimbo { display: inline-block; padding: 4px 8px 3px; border: 2px solid currentColor; border-radius: 3px; background: #f2f5ef; color: #b92e15; font: 800 0.88rem 'Archivo', system-ui, sans-serif; font-stretch: 68%; line-height: 1; letter-spacing: 0.1em; text-transform: uppercase; transform: rotate(-3deg); white-space: nowrap; } .ds-prox { color: #14402b; } .ds-pass { color: #2f5d45; border-style: dashed; }"
+    },
+    {
+      "name": "Reading Label",
+      "kind": "chip",
+      "refersTo": "reading-ok",
+      "description": "Status words under fields: ok (solid green), attention (yellow), critical (dashed red on white).",
+      "html": "<span class=\"ds-leitura ds-ok\">Média</span> <span class=\"ds-leitura ds-at\">Baixa</span> <span class=\"ds-leitura ds-cr\">Muito baixa</span>",
+      "css": ".ds-leitura { display: inline-block; padding: 1px 9px; border: 2px solid transparent; border-radius: 4px; font: 750 0.86rem 'Archivo', system-ui, sans-serif; line-height: 1.5; } .ds-ok { background: #14402b; color: #f2f5ef; border-color: #14402b; } .ds-at { background: #f2c230; color: #14402b; border-color: #14402b; } .ds-cr { background: #fff; color: #b92e15; border-color: #b92e15; border-style: dashed; }"
+    },
+    {
+      "name": "Nutrient Roundel",
+      "kind": "custom",
+      "refersTo": "roundel",
+      "description": "N, P2O5, K2O circle, one size; dashed with no shadow when the nutrient is absent.",
+      "html": "<div class=\"ds-roundel\"><span class=\"ds-letra\">N</span><span class=\"ds-valor\">90</span><span class=\"ds-unid\">kg/ha</span></div> <div class=\"ds-roundel ds-vazio\"><span class=\"ds-letra\">K2O</span><span class=\"ds-valor\">nenhum</span></div>",
+      "css": ".ds-roundel { width: 132px; height: 132px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; border: 4px solid #14402b; border-radius: 50%; background: #f2c230; box-shadow: 5px 5px 0 #14402b; color: #14402b; text-align: center; font-family: 'Archivo', system-ui, sans-serif; } .ds-letra { font-size: 0.95rem; font-weight: 900; font-stretch: 70%; letter-spacing: 0.1em; line-height: 1; } .ds-valor { font-size: 2.5rem; font-weight: 900; font-stretch: 120%; line-height: 1.05; } .ds-unid { font-size: 0.78rem; font-weight: 750; font-stretch: 80%; letter-spacing: 0.04em; text-transform: uppercase; } .ds-vazio { border-style: dashed; background: transparent; box-shadow: none; color: #2f5d45; } .ds-vazio .ds-valor { font-size: 1.25rem; font-stretch: 100%; }"
+    },
+    {
+      "name": "Guarantee Label Panel",
+      "kind": "card",
+      "refersTo": "guarantee-label",
+      "description": "Bag-yellow label panel that opens results, with a ruled guarantee table.",
+      "html": "<div class=\"ds-rotulo\"><h3 class=\"ds-rotulo-titulo\">Seu saco</h3><table class=\"ds-garantia\"><caption>Corretivos</caption><tr><th>Calcário</th><td class=\"ds-gv\">2,4 t/ha</td></tr><tr><th>Gesso</th><td class=\"ds-gv\">0,9 t/ha</td></tr></table></div>",
+      "css": ".ds-rotulo { position: relative; padding: 28px; background: #f2c230; border: 4px solid #14402b; border-radius: 14px; color: #14402b; font-family: 'Archivo', system-ui, sans-serif; } .ds-rotulo::before { content: ''; position: absolute; inset: 8px; border: 2px dashed #14402b; border-radius: 8px; opacity: 0.55; pointer-events: none; } .ds-rotulo > * { position: relative; } .ds-rotulo-titulo { margin: 0 0 18px; font-size: 1.9rem; font-weight: 900; font-stretch: 125%; line-height: 1.1; } .ds-garantia { width: 100%; border-collapse: collapse; background: #fff; border: 3px solid #14402b; } .ds-garantia caption { padding: 8px 14px; background: #14402b; color: #f2f5ef; font-size: 0.9rem; font-weight: 800; font-stretch: 75%; letter-spacing: 0.12em; text-align: left; text-transform: uppercase; } .ds-garantia th, .ds-garantia td { padding: 12px 14px; border-top: 2px solid #14402b; text-align: left; } .ds-garantia tr:first-of-type th, .ds-garantia tr:first-of-type td { border-top: 0; } .ds-garantia th { font-weight: 850; font-stretch: 112%; } .ds-gv { font-size: 2rem; font-weight: 900; font-stretch: 120%; text-align: right !important; white-space: nowrap; }"
+    },
+    {
+      "name": "Crop Bag Choice",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Crop choice drawn as a bag standing on a shelf bar; chosen state lifts with hard offset shadow and red stamp.",
+      "html": "<div class=\"ds-saco\"><svg viewBox=\"0 0 120 150\" width=\"120\" aria-hidden=\"true\"><path d=\"M20 20 L100 20 L108 140 L12 140 Z\" fill=\"#f2c230\" stroke=\"#14402b\" stroke-width=\"3.5\" stroke-linejoin=\"round\"/><path d=\"M24 34 H96\" stroke=\"#14402b\" stroke-width=\"3\" stroke-dasharray=\"7 6\"/></svg><span class=\"ds-saco-nome\">Café</span></div>",
+      "css": ".ds-saco { display: inline-flex; flex-direction: column; align-items: center; cursor: pointer; font-family: 'Archivo', system-ui, sans-serif; color: #14402b; transition: transform 260ms cubic-bezier(0.16,1,0.3,1); } .ds-saco:hover { transform: translateY(-4px); } .ds-saco-nome { margin-top: 12px; font-size: 1.35rem; font-weight: 900; font-stretch: 125%; line-height: 1.1; text-transform: uppercase; } .ds-saco:focus-visible { outline: 3px solid #14402b; outline-offset: 6px; box-shadow: 0 0 0 9px #f2c230; border-radius: 10px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Saco de Adubo",
+    "overview": "The interface is a screenprinted fertilizer bag. The page opens on a bag-yellow band, the visitor chooses a bag per crop from a shelf, types soil data into a ruled panel, and the answer arrives as a printed label with N, P2O5 and K2O roundels and a \"Modo de usar\" list stamped with dates. Flat colour is the whole material: bag yellow, field-green ink, signal red used only for stamps and alerts, and a cool paper ground to read on. The ground is deliberately cool, moved off an earlier warm cream.\n\nDensity is moderate and phone-first. Frames are thick (3 to 4px) and green; seams between regions are dashed, like stitching. The woven-sack hatch appears only on the top band and the footer band; the working area and the results stay flat on paper so figures read cleanly. Delight lives in the drawing (hand-made SVG bag emblems per crop) and in one motion, never in anything that makes a number harder to read.",
+    "keyCharacteristics": [
+      "Four-colour print palette on a cool paper ground; no gradients, no glass, no blur.",
+      "One variable face (Archivo): heavy and expanded for names and numbers, condensed uppercase for stamps and tags, normal width for reading.",
+      "Thick green frames, dashed stitched seams, slightly rotated red stamps.",
+      "Class readings always appear as words with a distinct fill style, never colour alone.",
+      "Hard offset depth on exactly two things: the chosen bag and the nutrient roundels."
+    ],
+    "rules": [
+      { "name": "The Red Is A Stamp Rule", "body": "Signal red marks a stamp, a deadline or an error. It never fills a button, a heading or decoration.", "section": "colors" },
+      { "name": "The Hatch Stays Up Top Rule", "body": "The woven-sack hatch lives only on the header band and the footer band. Results and forms stay flat on paper.", "section": "colors" },
+      { "name": "The Word Beside The Colour Rule", "body": "A class or status is always a word, and each state has its own fill: solid green ink (ok), yellow (attention), dashed red outline on white (critical).", "section": "colors" },
+      { "name": "The Width Carries The Role Rule", "body": "Role is set by font width as much as size: expanded for names and numbers, condensed uppercase for stamps and tags, 100% for reading.", "section": "typography" },
+      { "name": "The 68ch Rule", "body": "Running text never exceeds 68ch.", "section": "typography" },
+      { "name": "The Flat Results Rule", "body": "Result tables, doses, milestones and text blocks carry no shadow. Only the roundels are lifted.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do draw every icon and emblem as inline SVG in the 3.5px ink stroke or the 2px fine stroke; the build contains no emoji and no glyph icons.",
+      "Do use `tinta` for text and rules; use `tinta-2` for secondary text and hints.",
+      "Do keep tap targets at 44px or more (56px for buttons and chips, 52px for fields).",
+      "Do show every status as a word with its own fill style.",
+      "Do keep running text at 17px, line-height 1.55, max 68ch, tabular numerals.",
+      "Do keep display sizes in `clamp()` and headlines balanced.",
+      "Do give dashed stitching to seams and disabled states; give solid thick frames to things you can act on."
+    ],
+    "donts": [
+      "Don't put the woven hatch behind forms, tables or results.",
+      "Don't use red for buttons, headings or decoration.",
+      "Don't add gradients, glass, blur or soft ambient shadows; the system uses flat fills and focus rings only.",
+      "Don't set a heading in a system display face; names and numbers are Archivo expanded.",
+      "Don't let a shadow touch result text, tables or milestones.",
+      "Don't suppress the focus ring except on programmatic focus targets."
+    ]
+  }
+}

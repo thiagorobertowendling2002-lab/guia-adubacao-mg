@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-03T20:21:10.673Z",
+        "reason": "Assistente, sem confirmação específica do usuário: as duas ocorrências são as costuras tracejadas horizontais (border-bottom e border-top de 4px) das faixas do topo e do rodapé, parte da direção Saco de Adubo escolhida pelo usuário; não são abas laterais de cartão."
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+.impeccable/review/
+.impeccable/questions/
+.impeccable/hook.cache.json
+*.log
+.DS_Store
+Thumbs.db
