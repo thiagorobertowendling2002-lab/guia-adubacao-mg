@@ -1873,8 +1873,6 @@ html[data-tema='dark'] {
   --botao-hover: #ffffff;
   scrollbar-color: #e6ece0 #1a221c;
 }
-html[data-tema='dark'] .topo,
-html[data-tema='dark'] .rodape,
 html[data-tema='dark'] .rotulo,
 html[data-tema='dark'] .saco-svg,
 html[data-tema='dark'] .doses li,
@@ -1949,4 +1947,23 @@ html[data-tema='dark'] .tema-lua {
   .marca {
     padding-right: 52px;
   }
+}
+
+/* modo escuro: topo e rodapé também ficam pretos; o amarelo vira acento (plaquinha MG e botão) */
+html[data-tema='dark'] .topo,
+html[data-tema='dark'] .rodape {
+  background-color: #0d120e;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M0 .5H8M.5 0V8' stroke='%231a221c' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+html[data-tema='dark'] .marca-mg {
+  background: var(--amarelo);
+  color: #14402b;
+}
+html[data-tema='dark'] .tema-botao {
+  background: var(--amarelo);
+  color: #14402b;
+  border-color: var(--amarelo);
+}
+html[data-tema='dark'] .tema-botao:hover {
+  background: #ffd75a;
 }
