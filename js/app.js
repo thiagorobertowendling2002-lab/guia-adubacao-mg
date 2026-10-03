@@ -1325,6 +1325,19 @@
       const n = Number(alvo.dataset.passo);
       if (n === 2 && !estado.grupo) return;
       mostrarPasso(n);
+    } else if (acao === 'limpar') {
+      try {
+        localStorage.removeItem(CHAVE);
+      } catch (e) {
+        /* sem armazenamento: nada a apagar */
+      }
+      estado = PADRAO();
+      ultimo = null;
+      $('#resultado').hidden = true;
+      $('#passo-1').innerHTML = passo1HTML();
+      $('#variante').innerHTML = varianteHTML();
+      atualizarCinto();
+      mostrarPasso(1);
     } else if (acao === 'validar-laudo') validarLaudo();
     else if (acao === 'ver-receita') verReceita();
     else if (acao === 'editar') {
