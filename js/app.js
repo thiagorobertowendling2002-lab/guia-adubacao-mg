@@ -654,7 +654,7 @@
     return `
     <div class="roundel${vazio ? ' roundel-vazio' : ''}">
       <span class="roundel-letra">${quim(letra)}</span>
-      <span class="roundel-valor${txt.length > 5 ? ' longo' : ''}">${esc(txt)}</span>
+      <span class="roundel-valor${vazio ? '' : txt.length > 5 ? ' longo' : txt.length > 3 ? ' medio' : ''}">${esc(txt)}</span>
       <span class="roundel-un">${vazio ? '&nbsp;' : esc(un)}</span>
     </div>`;
   };
