@@ -368,9 +368,11 @@
     const fase = (f) => {
       const c = cls[f.criterio];
       const notas = new Set();
+      // semClasse: a fonte dá dose fixa (pitaya), sem coluna por classe de fertilidade.
+      const dose = f.semClasse ? (arr) => ({ valor: arr[0], nota: null }) : (arr, i5) => doseTres(arr, i5);
       const eventos = f.eventos.map((e) => {
-        const p = e.P ? doseTres(e.P, c.P.indice) : { valor: 0, nota: null };
-        const k = e.K ? doseTres(e.K, c.K.indice) : { valor: 0, nota: null };
+        const p = e.P ? dose(e.P, c.P.indice) : { valor: 0, nota: null };
+        const k = e.K ? dose(e.K, c.K.indice) : { valor: 0, nota: null };
         if (p.nota && e.P) notas.add('P-' + p.nota);
         if (k.nota && e.K) notas.add('K-' + k.nota);
         return Object.assign({}, e, { N: e.N, P: p.valor, K: k.valor });
@@ -531,9 +533,12 @@
     const d = derivados(a);
     const manejo = entrada.manejo || {};
     const par = cult.calagem;
-    const cal = calagem(a, par, { SC: num(manejo.SC) || 100, PF: num(manejo.PF) || 20, PRNT: num(manejo.PRNT) || 80 });
     const sub = entrada.subsolo || {};
-    const ges = gesso(sub, a, par, { SC: num(manejo.SC) || 100, EC: num(manejo.EC) || 20 });
+    // Cultura sem método de calagem na fonte (pitaya): o guia não calcula nem inventa parâmetros.
+    const cal = par
+      ? calagem(a, par, { SC: num(manejo.SC) || 100, PF: num(manejo.PF) || 20, PRNT: num(manejo.PRNT) || 80 })
+      : { indisponivel: true, precisa: false, QC: 0, NC: 0, porAl: false, porCaMg: false, dolomitico: false, dolomiticoObrigatorio: false, alertas: [], parametros: null, bases: { QC: 0, aplicavel: false }, usar: { PRNT: num(manejo.PRNT) || 80, SC: num(manejo.SC) || 100, PF: num(manejo.PF) || 20 } };
+    const ges = par ? gesso(sub, a, par, { SC: num(manejo.SC) || 100, EC: num(manejo.EC) || 20 }) : { avaliado: false, indisponivel: true };
 
     const esp = {
       entreLinhas: num(entrada.espacamento && entrada.espacamento.entreLinhas) || cult.entreLinhas,
@@ -558,7 +563,7 @@
 
     return {
       ok: true,
-      cultura: { id: cult.id, nome: cult.nome, nomeLongo: cult.nomeLongo, tipo: cult.tipo, grupo: cult.grupo, sec: cult.sec, pag: cult.pag },
+      cultura: { id: cult.id, nome: cult.nome, nomeLongo: cult.nomeLongo, tipo: cult.tipo, grupo: cult.grupo, sec: cult.sec, pag: cult.pag, obra: cult.obra || null },
       solo: { a, derivados: d, interpretacao: interpretar(a, d), arenoso: ehArenoso(a), densidade: densidade(esp), espacamento: esp },
       calagem: cal,
       gesso: ges,

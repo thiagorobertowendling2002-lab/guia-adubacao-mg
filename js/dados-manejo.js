@@ -18,7 +18,8 @@
     citros: { sec: '18.2.5', pag: 219 },
     mamao: { sec: '18.2.9', pag: 237 },
     manga: { sec: '18.2.10', pag: 239 },
-    maracuja: { sec: '18.2.11', pag: 242 }
+    maracuja: { sec: '18.2.11', pag: 242 },
+    pitaya: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 6 }
   };
 
   const fmt = (n) => (Math.round(n * 10) / 10).toString().replace('.', ',');
@@ -475,6 +476,79 @@
         texto: 'Colha 60 folhas, em todas as posições, de 250 a 280 dias depois do plantio.',
         fonte: { sec: '17.2.1', pag: 145 }
       }
+    ],
+    pitaya: [
+      {
+        id: 'pitaya-solo',
+        tema: 'solo',
+        titulo: 'Solo, calagem e gesso na pitaya',
+        texto: 'A cartilha pede solo bem drenado, de textura média, com pH entre 5,5 e 6,5. Ela não traz método de calagem nem de gesso: sem análise, manda 300 g de calcário por cova. Por isso o guia não calcula calcário nem gesso para a pitaya. Com o laudo na mão, converse com um técnico da Emater.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 6 },
+        quando: (p) => (p.solo.a.pH < 5.5 ? `O seu pH em água é ${fmt(p.solo.a.pH)}, abaixo de 5,5.` : p.solo.a.pH > 6.5 ? `O seu pH em água é ${fmt(p.solo.a.pH)}, acima de 6,5.` : 'O seu pH está dentro da faixa de 5,5 a 6,5.')
+      },
+      {
+        id: 'pitaya-espacamento',
+        tema: 'planta',
+        titulo: 'Espaçamento e tutor',
+        texto: 'Espaçamento de 2 x 3 m ou 3 x 3 m. Cada planta pede um mourão de madeira ou concreto que dure 15 anos, com 1,6 a 1,8 m acima do solo e 50 cm enterrados. Não use eucalipto tratado, que inibe a planta. Em declive, plante em curva de nível; onde há vento forte, use quebra-vento.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 6 }
+      },
+      {
+        id: 'pitaya-mudas',
+        tema: 'planta',
+        titulo: 'Mudas de cladódio',
+        texto: 'Tire os cladódios de uma planta-mãe sadia e produtiva, com pelo menos 25 cm, depois da frutificação e antes da nova floração. Deixe uma semana à sombra para cicatrizar. Plante direto ou enraíze em sacola (terra, esterco curtido e areia, 3:2:1): de 2 a 4 meses as mudas estão prontas.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 6 }
+      },
+      {
+        id: 'pitaya-cova',
+        tema: 'nutricao',
+        titulo: 'Cova e plantio',
+        texto: 'Cova de 50 x 50 x 50 cm, perto do mourão. Sem análise do solo, misture na terra de cima 10 a 15 L de esterco bovino curtido (ou 5 a 7 L de esterco de aves), 300 g de calcário e 300 g de superfosfato simples. Plante de 40 a 60 dias depois, faça uma amontoa de 5 cm no pé e amarre a planta no mourão conforme cresce.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 7 }
+      },
+      {
+        id: 'pitaya-adubacao',
+        tema: 'nutricao',
+        titulo: 'Adubação de cobertura e boro',
+        texto: 'A cartilha avisa que há pouca pesquisa e que a adubação vem de experiência de cultivo. No primeiro ano, 200 g de NPK 20-00-20 por planta em 4 vezes, de novembro a março. Na produção, 150 g em 3 vezes no período chuvoso. Aplique boro todo ano antes da florada, porque ele é fundamental para o pegamento das flores.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 11 }
+      },
+      {
+        id: 'pitaya-podas',
+        tema: 'planta',
+        titulo: 'Podas',
+        texto: 'Formação: deixe só um ou dois cladódios subindo até o topo do mourão. Apical: corte a ponta quando a planta chegar ao suporte, para brotar os ramos produtivos. Produção: depois do primeiro ano, de maio a outubro, fora da floração (novembro a abril). Limpeza: tire o que está doente ou seco e queime. Desinfete a ferramenta com álcool a 70%.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 10 }
+      },
+      {
+        id: 'pitaya-irrigacao',
+        tema: 'planta',
+        titulo: 'Irrigação',
+        texto: 'A pitaya é rústica e aceita de 650 a 1.500 mm de chuva por ano bem distribuídos. Quando irrigar, de 2 a 3 vezes por semana, por gotejamento a 20 a 40 cm do pé, sem encharcar. Alta umidade favorece doenças.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 11 }
+      },
+      {
+        id: 'pitaya-pragas',
+        tema: 'atencao',
+        titulo: 'Pragas e doenças: manejo cultural',
+        texto: 'Não há produto químico registrado no MAPA para a pitaya, então o controle é cultural: adubação adequada, podas, e tirar e queimar ramos e frutos doentes. Combata formiga desde antes de plantar e a abelha irapuã se ela aparecer. Cuidado com antracnose, podridão negra e fusariose.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 12 }
+      },
+      {
+        id: 'pitaya-colheita',
+        tema: 'planta',
+        titulo: 'Polinização e colheita',
+        texto: 'A polinização manual, com pincel, pode aumentar a produção. A colheita começa pequena um ano depois do plantio e chega ao pico em 2 anos, com até 3 safras por ano, de dezembro a maio. Colha o fruto maduro: ele não amadurece depois de solto. A cartilha estima em torno de 12 kg por planta por ano.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 13 }
+      },
+      {
+        id: 'pitaya-cultura-nova',
+        tema: 'atencao',
+        titulo: 'Cultura nova, com pouca pesquisa',
+        texto: 'A cartilha lembra que a pitaya é uma cultura nova, com poucos resultados de pesquisa: faça análise de mercado, visite cultivos comerciais, analise o solo e procure um técnico da Emater para planejar.',
+        fonte: { obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)', pag: 13 }
+      }
     ]
   };
 
@@ -485,6 +559,7 @@
     if (id === 'cafe') lista = cafe;
     else if (id === 'milho') lista = milho;
     else if (id === 'feijao') lista = feijao;
+    else if (id === 'pitaya') lista = porFruta.pitaya;
     else lista = fruta.concat(porFruta[id] || []);
     const tipo = variante && variante.tipo;
     return lista

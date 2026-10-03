@@ -324,3 +324,27 @@ test('plano: solo bom não pede calcário', () => {
   assert.equal(p.calagem.precisa, false);
   assert.equal(p.calagem.QC, 0);
 });
+
+// ------------------------------------------------------------------- pitaya (cartilha da Emater-MG, 2023)
+test('pitaya: não inventa calagem nem gesso, e a dose não depende da classe de fertilidade', () => {
+  const baixo = M.plano({ cultura: 'pitaya', variante: {}, analise: { pH: 5, P: 1, K: 10, Ca: 0.3, Mg: 0.1, Al: 1.5, HAl: 9, argila: 40 }, subsolo: { Ca: 0.1, Al: 1 } });
+  const bom = M.plano({ cultura: 'pitaya', variante: {}, analise: { pH: 6, P: 40, K: 200, Ca: 4, Mg: 1.5, Al: 0, HAl: 2, argila: 40 } });
+  for (const p of [baixo, bom]) {
+    assert.equal(p.ok, true);
+    assert.equal(p.calagem.indisponivel, true);
+    assert.equal(p.calagem.QC, 0);
+    assert.equal(p.gesso.indisponivel, true);
+  }
+  assert.deepEqual(baixo.adubacao.fases.map((f) => f.total), bom.adubacao.fases.map((f) => f.total));
+  assert.deepEqual(baixo.adubacao.fases.map((f) => f.notas), [[], []]);
+});
+
+test('pitaya: NPK 20-00-20 da cartilha vira nutriente (200 g = 40 g de N e 40 g de K2O; 150 g = 30 g e 30 g)', () => {
+  const p = M.plano({ cultura: 'pitaya', variante: {}, analise: solo });
+  const [primeiro, producao] = p.adubacao.fases;
+  assert.equal(primeiro.total.N, 200 * 0.2);
+  assert.equal(primeiro.total.K, 200 * 0.2);
+  assert.equal(primeiro.total.P, 300 * 0.18, '300 g de superfosfato simples a 18% de P2O5');
+  assert.equal(producao.total.N, 150 * 0.2);
+  assert.equal(producao.total.K, 150 * 0.2);
+});

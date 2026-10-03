@@ -2,7 +2,7 @@
 
 Digite o laudo do solo, escolha a lavoura e a data de plantio. O guia mostra a calagem, a gessagem, a adubação de plantio e de cobertura, as estratégias de manejo do manual e **a data de cada aplicação**.
 
-Lavouras: café, milho (grão e silagem), feijão (níveis de tecnologia 1 a 4) e cinco frutas tropicais (banana prata-anã, citros, manga, mamão e maracujá).
+Lavouras: café, milho (grão e silagem), feijão (níveis de tecnologia 1 a 4) e seis frutas (banana prata-anã, citros, manga, mamão, maracujá e pitaya).
 
 É um site estático: HTML, CSS e JavaScript puros, sem build e sem servidor. Os cálculos rodam no aparelho de quem usa, e nada do laudo sai dele.
 
@@ -29,6 +29,10 @@ O que está implementado do manual:
 - **Classes de fertilidade** (cap. 5, item 18.1.1 e quadros do café): fósforo por argila ou P-rem, potássio, complexo de troca e micronutrientes.
 - **Doses por cultura** (seções 18.2, 18.4.6, 18.4.8 e 18.4.13), com as tabelas por fase, por estádio ou por faixa de produtividade.
 - **Estratégias de manejo** de cada cultura, em cartões curtos que citam a seção.
+
+## A pitaya vem de outra fonte
+
+O manual de 1999 não fala de pitaya. As doses, o calendário e o manejo dela vêm da *Cultivo da Pitaya* (Emater-MG, Belo Horizonte, 2023). A cartilha dá a adubação em gramas de NPK 20-00-20 por planta e diz que é baseada em experiência de cultivo, com pouca pesquisa. O guia converte para nutriente (200 g = 40 g de N e 40 g de K₂O). A cartilha **não traz método de calagem nem de gesso**, então para a pitaya o guia não calcula calcário nem gesso: mostra a faixa de pH da cartilha (5,5 a 6,5) e os 300 g de calcário por cova. Nas telas e nas citações a pitaya aparece com a fonte dela.
 
 ## Escolhas e estimativas (leia antes de confiar numa data)
 

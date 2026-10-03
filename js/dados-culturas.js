@@ -449,10 +449,56 @@
         ],
         total: { N: 60, P: [60, 40, 20], K: [60, 40, 20] }
       }
+    }),
+
+    /* ---------------------------------------------------------------- PITAYA
+       Fonte diferente do resto: cartilha da Emater-MG (2023). Ela não traz método de calagem nem de gesso,
+       e dá a adubação em g de NPK 20-00-20 (20% de N e 20% de K2O), sem classes de fertilidade. */
+    pitaya: frutaComum({
+      id: 'pitaya',
+      nome: 'Pitaya',
+      nomeLongo: 'Pitaya',
+      obra: 'Cartilha Cultivo da Pitaya, Emater-MG (2023)',
+      fonteCurta: 'A cartilha',
+      sec: null,
+      pag: 11,
+      entreLinhas: 3.0,
+      entrePlantas: 3.0,
+      calagem: null,
+      janelaPlantio: { meses: [11], texto: 'na primeira quinzena de novembro, como propõe o cronograma da cartilha' },
+      organicoCova: '10 a 15 L de esterco bovino curtido (ou 5 a 7 L de esterco de aves)',
+      calcarioCova: '300 g de calcário por cova (dose da cartilha para quando não há análise do solo)',
+      fosforoNaCova: true,
+      covaAntes: 50,
+      amostraDias: -65,
+      fracaoNatural: 0,
+      notaAdubo: 'A cartilha indica o adubo formulado NPK 20-00-20: os gramas do formulado são 5 vezes os gramas de N.',
+      fases: [
+        {
+          id: 'plantio', titulo: 'Primeiro ano (cova e coberturas)', ano: 0, unidade: 'g/planta', criterio: 'hort', semClasse: true,
+          eventos: [
+            { id: 'p-cova', rotulo: 'Adubo na cova (300 g de superfosfato simples)', quando: { tipo: 'plantio' }, N: 0, P: [54, 54, 54], K: null },
+            { id: 'p-1', rotulo: '1 de 4', quando: { tipo: 'rel', dias: 15, gatilho: 'a cartilha parcela em 4 vezes de novembro a março', estimado: true }, N: 10, P: null, K: [10, 10, 10] },
+            { id: 'p-2', rotulo: '2 de 4', quando: { tipo: 'rel', dias: 55, gatilho: 'a cartilha parcela em 4 vezes de novembro a março', estimado: true }, N: 10, P: null, K: [10, 10, 10] },
+            { id: 'p-3', rotulo: '3 de 4', quando: { tipo: 'rel', dias: 95, gatilho: 'a cartilha parcela em 4 vezes de novembro a março', estimado: true }, N: 10, P: null, K: [10, 10, 10] },
+            { id: 'p-4', rotulo: '4 de 4', quando: { tipo: 'rel', dias: 135, gatilho: 'a cartilha parcela em 4 vezes de novembro a março', estimado: true }, N: 10, P: null, K: [10, 10, 10] }
+          ],
+          total: { N: 40, P: [54, 54, 54], K: [40, 40, 40] }
+        },
+        {
+          id: 'producao', titulo: 'Produção (a partir do 2º ano)', ano: 1, emDiante: true, unidade: 'g/planta', criterio: 'cap5', semClasse: true,
+          eventos: [
+            { id: 'pr-nov', rotulo: 'Cobertura de novembro', quando: { tipo: 'mes', mes: 11, estimado: true }, N: 10, P: null, K: [10, 10, 10] },
+            { id: 'pr-jan', rotulo: 'Cobertura de janeiro', quando: { tipo: 'mes', mes: 1, estimado: true }, N: 10, P: null, K: [10, 10, 10] },
+            { id: 'pr-mar', rotulo: 'Cobertura de março', quando: { tipo: 'mes', mes: 3, estimado: true }, N: 10, P: null, K: [10, 10, 10] }
+          ],
+          total: { N: 30, P: [0, 0, 0], K: [30, 30, 30] }
+        }
+      ]
     })
   };
 
   G.culturas = culturas;
   G.ordemCulturas = ['cafe', 'milho', 'feijao', 'frutas'];
-  G.frutas = ['banana', 'citros', 'manga', 'mamao', 'maracuja'];
+  G.frutas = ['banana', 'citros', 'manga', 'mamao', 'maracuja', 'pitaya'];
 })((globalThis.Guia = globalThis.Guia || {}));

@@ -264,3 +264,34 @@ test('estado dos marcos: passado, agora, próximo e futuro', () => {
   assert.equal(cal.marcos.filter((m) => m.estado === 'proximo').length, 1);
   assert.equal(achar(cal, 'molibdenio').estado, 'agora', '10 de março está na janela de 4 a 14 de março');
 });
+
+// ------------------------------------------------------------------- pitaya
+test('pitaya nova: amostragem em setembro, cova 50 dias antes e 4 coberturas até março; sem calagem nem gesso', () => {
+  const plano = M.plano({ cultura: 'pitaya', variante: {}, analise: solo });
+  const cal = K.montar(plano, { plantio: '2026-11-10', hoje: '2026-08-01' });
+  assert.equal(achar(cal, 'amostragem').data, '2026-09-06');
+  assert.equal(achar(cal, 'cova').data, '2026-09-21');
+  assert.equal(achar(cal, 'calagem'), undefined);
+  assert.equal(achar(cal, 'gesso'), undefined);
+  const cob = cal.marcos.filter((m) => /^p-[1-4]$/.test(m.id));
+  assert.deepEqual(cob.map((m) => m.data), ['2026-11-25', '2027-01-04', '2027-02-13', '2027-03-25']);
+  assert.ok(cob.every((m) => m.dose.N === 10 && m.dose.K2O === 10 && m.estimado));
+  assert.equal(achar(cal, 'cova').dose.P2O5, 54, 'todo o fósforo vai na cova');
+  assert.equal(achar(cal, 'plantio').dose.P2O5, 0);
+});
+
+test('pitaya em produção: três coberturas no período chuvoso a cada estação', () => {
+  const plano = M.plano({ cultura: 'pitaya', variante: {}, analise: solo });
+  const cal = K.montar(plano, { plantio: '2024-11-10', hoje: HOJE });
+  const doAno = cal.marcos.filter((m) => /^pr-(nov|jan|mar)-k\d$/.test(m.id) && m.data >= '2026-08-01' && m.data < '2027-08-01');
+  assert.deepEqual(doAno.map((m) => m.data), ['2026-11-15', '2027-01-15', '2027-03-15']);
+  assert.ok(doAno.every((m) => m.dose.N === 10));
+});
+
+test('pitaya plantada fora de novembro gera aviso de janela da cartilha', () => {
+  const plano = M.plano({ cultura: 'pitaya', variante: {}, analise: solo });
+  const cal = K.montar(plano, { plantio: '2027-03-10', hoje: HOJE });
+  const a = cal.avisos.find((x) => x.tipo === 'janela');
+  assert.ok(a);
+  assert.match(a.texto, /A cartilha manda plantar/);
+});

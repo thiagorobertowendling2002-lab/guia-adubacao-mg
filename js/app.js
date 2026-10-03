@@ -145,7 +145,7 @@
     { id: 'cafe', nome: 'Café', sub: 'Cafeeiro' },
     { id: 'milho', nome: 'Milho', sub: 'Grão ou silagem' },
     { id: 'feijao', nome: 'Feijão', sub: 'Por nível de tecnologia' },
-    { id: 'frutas', nome: 'Frutas', sub: 'Cinco frutas tropicais' }
+    { id: 'frutas', nome: 'Frutas', sub: 'Seis frutas, da banana à pitaya' }
   ];
 
   function passo1HTML() {
@@ -242,7 +242,7 @@
       <fieldset class="grupo-var">
         <legend>Qual fruta?</legend>
         <div class="chips">
-          ${G.frutas.map((id) => chip('fruta', id, estado.fruta === id, C[id].nomeLongo.replace(/ \(.*\)/, ''), id === 'citros' ? 'laranja, limão, tangerina' : '')).join('')}
+          ${G.frutas.map((id) => chip('fruta', id, estado.fruta === id, C[id].nomeLongo.replace(/ \(.*\)/, ''), id === 'citros' ? 'laranja, limão, tangerina' : id === 'pitaya' ? 'não é tropical; dados da Emater-MG' : '')).join('')}
         </div>
       </fieldset>`;
   }
@@ -667,6 +667,7 @@
 
   const fonteTxt = (f) => {
     if (!f) return '';
+    if (f.obra) return `${f.obra}, p. ${f.pag}`;
     const sec = /^Cap\./.test(f.sec) ? `cap. ${f.sec.replace(/^Cap\.\s*/, '')}` : `seção ${f.sec}`;
     return `Manual, ${sec}, p. ${f.pag}`;
   };
@@ -678,7 +679,10 @@
     const par = c.parametros;
     const cult = plano.cultura;
     let corpo;
-    if (c.precisa) {
+    if (c.indisponivel) {
+      const pH = plano.solo.a.pH;
+      corpo = `<p>A ${esc(cult.obra)} não traz método de calagem. Ela pede solo com pH em água entre 5,5 e 6,5 e, na cova, 300 g de calcário quando não há análise. O seu pH é <strong>${fmt(pH)}</strong>${pH < 5.5 ? ', abaixo da faixa: peça a um técnico da Emater a dose de calcário para a área toda' : pH > 6.5 ? ', acima da faixa: não aplique calcário' : ', dentro da faixa'}. Por isso o guia não calcula calcário para a pitaya.</p>`;
+    } else if (c.precisa) {
       const porque =
         c.porAl && c.porCaMg
           ? 'Neutraliza o alumínio, que machuca a raiz, e levanta o cálcio e o magnésio até o que a lavoura pede.'
@@ -696,14 +700,16 @@
       <div class="receita-linha">
         <h3 class="receita-nome">Calagem: de onde vem a dose</h3>
         <div class="receita-texto">${corpo}</div>
-        ${fonteHTML(plano.fontes.calagem)}
+        ${fonteHTML(c.indisponivel ? { obra: cult.obra, pag: 6 } : plano.fontes.calagem)}
       </div>`;
   }
 
   function explicaGesso(plano) {
     const g = plano.gesso;
     let corpo;
-    if (!g.avaliado) {
+    if (g.indisponivel) {
+      corpo = '<p>A cartilha da pitaya não trata de gesso, então o guia não calcula dose de gesso para essa cultura.</p>';
+    } else if (!g.avaliado) {
       corpo = `<p>Para saber da gessagem, o manual usa o laudo da camada de 20 a 40 cm. Você não informou esse laudo, então o guia não calcula dose.</p>
         <p><button type="button" class="link-botao" data-acao="abrir-subsolo">Informar o laudo do subsolo</button></p>`;
     } else if (!g.indicado) {
@@ -718,7 +724,7 @@
       <div class="receita-linha">
         <h3 class="receita-nome">Gessagem: de onde vem a dose</h3>
         <div class="receita-texto">${corpo}</div>
-        ${fonteHTML(plano.fontes.gesso)}
+        ${g.indisponivel ? '' : fonteHTML(plano.fontes.gesso)}
       </div>`;
   }
 
@@ -755,7 +761,7 @@
           <p class="nota">Fósforo em classe <strong>${esc(ad.classeP.rotulo)}</strong>, lido ${lidoPor(ad.classeP.criterio)}. Potássio em classe <strong>${esc(ad.classeK.rotulo)}</strong>.</p>
           ${extra}
         </div>
-        ${fonteHTML({ sec: plano.cultura.sec, pag: plano.cultura.pag })}
+        ${fonteHTML({ sec: plano.cultura.sec, pag: plano.cultura.pag, obra: plano.cultura.obra })}
       </div>`;
   }
 
@@ -780,7 +786,7 @@
       N: fmt(f.total.N),
       P: fmt(f.total.P),
       K: fmt(f.total.K),
-      obs: `Fósforo em classe ${f.classeP.rotulo}, potássio em classe ${f.classeK.rotulo}.`,
+      obs: f.semClasse ? 'Dose fixa da cartilha, que não separa por classe de fertilidade.' : `Fósforo em classe ${f.classeP.rotulo}, potássio em classe ${f.classeK.rotulo}.`,
       rN: par(f.total.N, f.unidade),
       rP: par(f.total.P, f.unidade),
       rK: par(f.total.K, f.unidade)
@@ -840,7 +846,7 @@
         <p class="nota">Os números grandes do rótulo são da fase em que você está. Os anos seguintes vêm do mesmo manual.</p>
         ${tabela}
         ${extra.map((t) => `<p class="nota">${quim(t)}</p>`).join('')}
-        ${fonteHTML({ sec: plano.cultura.sec, pag: plano.cultura.pag })}
+        ${fonteHTML({ sec: plano.cultura.sec, pag: plano.cultura.pag, obra: plano.cultura.obra })}
       </div>`;
   }
 
@@ -875,8 +881,8 @@
       if (prox && !cur.rN) grupos.push({ nome: `Em seguida: ${prox.rot.toLowerCase()} (${prox.un})`, html: trioRoundels(prox.rN, prox.rP, prox.rK) });
     }
     const linhaG = (nome, valor, un) => `<tr><th scope="row">${nome}</th><td class="gar-valor">${valor}</td><td class="gar-un">${un}</td></tr>`;
-    const calG = c.precisa ? linhaG('Calcário', fmt(c.QC, 2), 't/ha') : linhaG('Calcário', 'nada', 'não precisa');
-    const gesG = !g.avaliado ? linhaG('Gesso', '?', 'sem laudo do subsolo') : g.indicado ? linhaG('Gesso', fmt(g.QG, 2), 't/ha') : linhaG('Gesso', 'nada', 'não indicado');
+    const calG = c.indisponivel ? linhaG('Calcário', '—', 'só 300 g na cova') : c.precisa ? linhaG('Calcário', fmt(c.QC, 2), 't/ha') : linhaG('Calcário', 'nada', 'não precisa');
+    const gesG = g.indisponivel ? linhaG('Gesso', '—', 'a cartilha não trata') : !g.avaliado ? linhaG('Gesso', '?', 'sem laudo do subsolo') : g.indicado ? linhaG('Gesso', fmt(g.QG, 2), 't/ha') : linhaG('Gesso', 'nada', 'não indicado');
     return `
       <div class="rotulo">
         <div class="rotulo-topo">

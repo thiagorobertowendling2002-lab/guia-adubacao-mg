@@ -84,6 +84,10 @@
     const cal = plano.calagem;
     const ges = plano.gesso;
     const o = Object.assign({ amostra: -120, calagemIni: -90, calagemFim: -60, gesso: -60 }, opcoes);
+    if (cult.amostraDias) {
+      o.amostra = cult.amostraDias;
+      o.gatilhoAmostra = 'A cartilha propõe amostrar no início de setembro, para plantar na primeira quinzena de novembro.';
+    }
     m.push(
       marco({
         id: 'amostragem',
@@ -93,8 +97,8 @@
           'Colha a amostra de 0 a 20 cm e, para saber do gesso, também a de 20 a 40 cm. Peça o P-rem no laboratório. Deixe tempo para o laudo chegar antes da calagem.',
         data: somarDias(plantio, o.amostra),
         estimado: true,
-        gatilho: 'O manual manda amostrar "com boa antecedência" do plantio ou da adubação.',
-        fonte: FONTE_AMOSTRA
+        gatilho: o.gatilhoAmostra || 'O manual manda amostrar "com boa antecedência" do plantio ou da adubação.',
+        fonte: cult.obra ? { obra: cult.obra, pag: 14 } : FONTE_AMOSTRA
       })
     );
     if (cal.precisa) {
@@ -472,7 +476,7 @@
 
   function fruta(plano, cult, plantio, hoje, horizonte, avisos) {
     const ad = plano.adubacao;
-    const chave = { sec: cult.sec, pag: cult.pag };
+    const chave = { sec: cult.sec, pag: cult.pag, obra: cult.obra || null };
     const m = [];
     const novo = plantio >= hoje;
     const fasesCalc = ad.fases;
@@ -484,7 +488,7 @@
       m.push(...preparo(plano, cult, plantio));
       const cova = calcDe(cult.fases[0].id);
       const evCova = cova.eventos.find((e) => e.quando.tipo === 'plantio');
-      const frac = cult.fracaoNatural;
+      const frac = cult.fosforoNaCova ? 1 : cult.fracaoNatural;
       const pNat = evCova && evCova.P > 0 ? Math.round(evCova.P * frac) : 0;
       const pSol = evCova ? evCova.P - pNat : 0;
       m.push(
@@ -494,10 +498,16 @@
             categoria: 'cova',
             titulo: 'Abrir e adubar a cova',
             texto: `Misture na terra de enchimento: ${cult.organicoCova}${cult.calcarioCova ? `; ${cult.calcarioCova}` : ''}. ${
-              pNat > 0 ? `Do fósforo, ${pNat} g de P2O5 vão como fosfato natural reativo, e o potássio da cova também entra agora. ` : ''
-            }Adubo nitrogenado não vai na terra da cova. Prepare a cova com pelo menos dois meses de antecedência.`,
-            data: somarDias(plantio, -60),
-            gatilho: 'O manual manda preparar a cova de 2 meses antes do plantio e aplicar o orgânico 60 dias antes.',
+              cult.fosforoNaCova
+                ? `Todo o fósforo vai agora (${pNat} g de P2O5, que são 300 g de superfosfato simples). Plante de 40 a 60 dias depois de preparar a cova. `
+                : pNat > 0
+                ? `Do fósforo, ${pNat} g de P2O5 vão como fosfato natural reativo, e o potássio da cova também entra agora. `
+                : ''
+            }Adubo nitrogenado não vai na terra da cova.${cult.fosforoNaCova ? '' : ' Prepare a cova com pelo menos dois meses de antecedência.'}`,
+            data: somarDias(plantio, -(cult.covaAntes || 60)),
+            gatilho: cult.fosforoNaCova
+              ? 'A cartilha manda plantar de 40 a 60 dias depois de preparar a cova; usamos 50.'
+              : 'O manual manda preparar a cova de 2 meses antes do plantio e aplicar o orgânico 60 dias antes.',
             fonte: chave
           },
           { N: 0, P2O5: pNat, K2O: evCova ? evCova.K : 0, unidade: cova.unidade.startsWith('g/cova') ? 'g/cova' : 'g/planta' }
@@ -579,8 +589,9 @@
         const primeiroMes = mesBase ? mesBase.quando.mes : 10;
         fase.eventos.forEach((e) => {
           if (e.quando.tipo === 'plantio') return;
-          const meses = (e.quando.mes - primeiroMes + 12) % 12;
-          const data = somarMeses(base, meses);
+          const rel = e.quando.tipo === 'rel';
+          const meses = rel ? 0 : (e.quando.mes - primeiroMes + 12) % 12;
+          const data = rel ? somarDias(plantio, e.quando.dias) : somarMeses(base, meses);
           if (data > horizonte) return;
           m.push(
             comDose(
@@ -588,12 +599,12 @@
                 id: e.id,
                 categoria: 'cobertura',
                 titulo: `Cobertura: ${e.rotulo.toLowerCase()}`,
-                texto: `Aplique na projeção da copa, com o solo úmido. A primeira cobertura vem depois do pegamento da muda; as outras seguem o intervalo de meses do manual.${
-                  e.P > 0 ? ' Esta leva o fósforo.' : ''
-                }`,
+                texto: `Aplique na projeção da copa, com o solo úmido. ${
+                  rel ? '' : 'A primeira cobertura vem depois do pegamento da muda; as outras seguem o intervalo de meses do manual.'
+                }${e.P > 0 ? ' Esta leva o fósforo.' : ''}${cult.notaAdubo ? ' ' + cult.notaAdubo : ''}`,
                 data,
                 estimado: true,
-                gatilho: 'O manual dá meses; contamos a partir de 30 dias depois do plantio, quando a muda pega.',
+                gatilho: rel ? `${e.quando.gatilho[0].toUpperCase()}${e.quando.gatilho.slice(1)}; espaçamos as datas.` : 'O manual dá meses; contamos a partir de 30 dias depois do plantio, quando a muda pega.',
                 fase: faseDef.titulo,
                 fonte: chave
               },
@@ -617,7 +628,7 @@
               titulo: `${estadio ? 'Estádio ' + e.quando.estadio + ': ' : 'Cobertura de '}${estadio ? e.rotulo.toLowerCase() : mesNome(mes)}`,
               texto: `Aplique na projeção da copa, com o solo úmido.${e.P > 0 ? ' Esta leva o fósforo.' : ''}${
                 cult.semProducao && estadio ? ' Em ano sem produção, pule as aplicações depois do pegamento dos frutos e depois da colheita.' : ''
-              }`,
+              }${cult.notaAdubo ? ' ' + cult.notaAdubo : ''}`,
               data,
               fim: fimDoMes(anoDe(data), mes),
               precisao: 'mes',
@@ -704,7 +715,7 @@
     if (perene && novo && cult.janelaPlantio && !cult.janelaPlantio.meses.includes(mesPlantio)) {
       avisos.push({
         tipo: 'janela',
-        texto: `O manual manda plantar ${cult.janelaPlantio.texto}. Em ${mesNome(mesPlantio)} a muda pega com menos chuva pela frente. Se puder, mude a data.`
+        texto: `${cult.fonteCurta || 'O manual'} manda plantar ${cult.janelaPlantio.texto}. Em ${mesNome(mesPlantio)} a muda pega com menos chuva pela frente. Se puder, mude a data.`
       });
     }
     const precisaPreparo = plano.calagem.precisa || (plano.gesso && plano.gesso.indicado);
