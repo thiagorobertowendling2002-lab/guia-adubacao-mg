@@ -218,7 +218,8 @@
       <div class="acoes">
         <p class="acoes-dica" id="dica-continuar" ${estado.grupo ? 'hidden' : ''}>Escolha uma lavoura para continuar.</p>
         <button type="button" class="botao" id="continuar-1" data-acao="ir" data-passo="2" aria-describedby="dica-continuar" ${estado.grupo ? '' : 'disabled'}>Continuar ${SETA}</button>
-      </div>`;
+      </div>
+      <p class="limpar"><button type="button" class="link-botao" data-acao="limpar">Começar de novo: apagar os dados que o guia lembrou</button></p>`;
   }
 
   const chip = (nome, valor, marcado, texto, extra) => `
