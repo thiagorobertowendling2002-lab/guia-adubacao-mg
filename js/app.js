@@ -1361,7 +1361,28 @@
   }
 
   // --------------------------------------------------------------- partida
+  function aplicarTema(t) {
+    document.documentElement.setAttribute('data-tema', t);
+    const b = $('#tema');
+    if (b) {
+      b.setAttribute('aria-pressed', String(t === 'dark'));
+      $('.tema-rotulo', b).textContent = t === 'dark' ? 'Modo claro' : 'Modo escuro';
+    }
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    if (meta) meta.setAttribute('content', t === 'dark' ? 'dark' : 'light');
+  }
+
   function iniciar() {
+    aplicarTema(document.documentElement.getAttribute('data-tema') || 'light');
+    $('#tema').addEventListener('click', () => {
+      const novo = document.documentElement.getAttribute('data-tema') === 'dark' ? 'light' : 'dark';
+      aplicarTema(novo);
+      try {
+        localStorage.setItem('guia-adubacao-mg:tema', novo);
+      } catch (e) {
+        /* sem armazenamento: vale só nesta visita */
+      }
+    });
     carregar();
     $('#passo-1').innerHTML = passo1HTML();
     $('#variante').innerHTML = varianteHTML();

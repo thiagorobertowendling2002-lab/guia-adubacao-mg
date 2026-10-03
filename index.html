@@ -7,15 +7,23 @@
   <meta name="description" content="Digite o laudo do solo, escolha a lavoura e a data de plantio. O guia mostra a calagem, a gessagem, a adubação de plantio e de cobertura e as datas de cada aplicação, com base no manual da 5ª Aproximação de Minas Gerais.">
   <meta name="theme-color" content="#F2C230">
   <meta name="color-scheme" content="light">
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('guia-adubacao-mg:tema'); } catch (e) {}
+      if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-tema', t);
+    })();
+  </script>
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/estilo.css?v=4">
-  <script defer src="js/dados-base.js?v=4"></script>
-  <script defer src="js/dados-culturas.js?v=4"></script>
-  <script defer src="js/dados-manejo.js?v=4"></script>
-  <script defer src="js/motor.js?v=4"></script>
-  <script defer src="js/calendario.js?v=4"></script>
-  <script defer src="js/produtos.js?v=4"></script>
-  <script defer src="js/app.js?v=4"></script>
+  <link rel="stylesheet" href="css/estilo.css?v=6">
+  <script defer src="js/dados-base.js?v=6"></script>
+  <script defer src="js/dados-culturas.js?v=6"></script>
+  <script defer src="js/dados-manejo.js?v=6"></script>
+  <script defer src="js/motor.js?v=6"></script>
+  <script defer src="js/calendario.js?v=6"></script>
+  <script defer src="js/produtos.js?v=6"></script>
+  <script defer src="js/app.js?v=6"></script>
 </head>
 <body>
   <a class="pular" href="#principal">Pular para o conteúdo</a>
@@ -24,6 +32,11 @@
     <div class="topo-miolo">
       <h1 class="marca">Guia de Adubação <span class="marca-mg">MG</span></h1>
       <p class="marca-frase">Leia o laudo do solo e saiba quanto aplicar, e quando.</p>
+      <button type="button" class="tema-botao" id="tema" aria-pressed="false">
+        <svg class="ico tema-sol" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <svg class="ico tema-lua" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="currentColor"/></svg>
+        <span class="tema-rotulo">Modo escuro</span>
+      </button>
     </div>
   </header>
 

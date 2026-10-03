@@ -33,6 +33,8 @@
   --medida: 68ch;
   --lado: clamp(16px, 4vw, 32px);
   --expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --sombra-dura: #14402b;
+  --botao-hover: #1d5a3b;
 }
 
 *,
@@ -345,7 +347,7 @@ main {
   transform: translateY(-10px);
 }
 .saco-radio:checked + .saco-corpo .saco-svg {
-  filter: drop-shadow(6px 6px 0 var(--tinta));
+  filter: drop-shadow(6px 6px 0 var(--sombra-dura));
 }
 .saco-radio:focus-visible + .saco-corpo {
   outline: 3px solid var(--tinta);
@@ -996,7 +998,7 @@ details.mais > :not(summary) {
   transition: background-color 160ms ease-out, transform 160ms var(--expo);
 }
 .botao:hover:not(:disabled) {
-  background: #1d5a3b;
+  background: var(--botao-hover);
 }
 .botao:active:not(:disabled) {
   transform: translateY(2px);
@@ -1262,7 +1264,7 @@ details.mais > :not(summary) {
   border: 4px solid var(--tinta);
   border-radius: 50%;
   background: var(--amarelo);
-  box-shadow: 5px 5px 0 var(--tinta);
+  box-shadow: 5px 5px 0 var(--sombra-dura);
   text-align: center;
 }
 .roundel-letra {
@@ -1799,7 +1801,7 @@ details.mais > :not(summary) {
     width: 96px;
     height: 96px;
     padding: 4px;
-    box-shadow: 4px 4px 0 var(--tinta);
+    box-shadow: 4px 4px 0 var(--sombra-dura);
   }
   .roundel-valor {
     font-size: 1.7rem;
@@ -1850,5 +1852,101 @@ details.mais > :not(summary) {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+
+/* ------------------------------------------------------------------ modo escuro
+   Preto predominante. A tinta vira clara e o papel vira preto. As superfícies amarelas
+   (topo, rótulo, rodapé, sacos, etiquetas) voltam aos tokens claros para manter tinta verde sobre amarelo. */
+html[data-tema='dark'] {
+  color-scheme: dark;
+  --tinta: #e6ece0;
+  --tinta-2: #a9b8a8;
+  --osso: #090c0a;
+  --osso-2: #1a221c;
+  --papel: #111713;
+  --amarelo-claro: #2b2711;
+  --sinal: #ff7b5f;
+  --sinal-claro: #2b1511;
+  --sombra-dura: #e6ece0;
+  --botao-hover: #ffffff;
+  scrollbar-color: #e6ece0 #1a221c;
+}
+html[data-tema='dark'] .topo,
+html[data-tema='dark'] .rodape,
+html[data-tema='dark'] .rotulo,
+html[data-tema='dark'] .saco-svg,
+html[data-tema='dark'] .doses li,
+html[data-tema='dark'] .etiqueta,
+html[data-tema='dark'] .leitura[data-sit='atencao'] {
+  --tinta: #14402b;
+  --tinta-2: #2f5d45;
+  --osso: #f2f5ef;
+  --osso-2: #e2e8dd;
+  --papel: #ffffff;
+  --sinal: #b92e15;
+  --sinal-claro: #fbe9e3;
+  color: #14402b;
+}
+html[data-tema='dark'] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'%3E%3Cpath d='M2 2l6 6 6-6' fill='none' stroke='%23e6ece0' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+html[data-tema='dark'] summary::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'%3E%3Cpath d='M2 2l6 6 6-6' fill='none' stroke='%23e6ece0' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+html[data-tema='dark'] .rotulo .carimbo-lote {
+  background: #ffffff;
+}
+
+/* botão de tema, sobre a faixa amarela (que não muda de cor) */
+.topo-miolo {
+  position: relative;
+}
+.tema-botao {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  background: #14402b;
+  color: #f2c230;
+  border: 3px solid #14402b;
+  border-radius: var(--raio);
+  font-size: 0.9rem;
+  font-weight: 800;
+  font-stretch: 105%;
+  cursor: pointer;
+}
+.tema-botao:hover {
+  background: #1d5a3b;
+}
+.tema-lua {
+  display: none;
+}
+html[data-tema='dark'] .tema-sol {
+  display: none;
+}
+html[data-tema='dark'] .tema-lua {
+  display: block;
+}
+@media (max-width: 560px) {
+  .tema-botao {
+    top: -6px;
+    min-width: 44px;
+    padding: 0 10px;
+  }
+  .tema-rotulo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .marca {
+    padding-right: 52px;
   }
 }
