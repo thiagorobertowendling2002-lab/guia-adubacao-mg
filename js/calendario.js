@@ -274,7 +274,8 @@
   // ------------------------------------------------------------------- café
   const datasEspacadas = (inicio, n, passo) => Array.from({ length: n }, (_, i) => somarDias(inicio, i * passo));
 
-  function cafe(plano, cult, plantio, hoje, horizonte) {
+  /** Café, fase PLANTIO: cova, pós-plantio, 1º e 2º ano. Depois do 2º ano, o guia manda escolher a fase Produção. */
+  function cafePlantio(plano, cult, plantio, hoje, horizonte) {
     const ad = plano.adubacao;
     const chave = { sec: cult.sec, pag: cult.pag };
     const m = [];
@@ -288,7 +289,11 @@
             id: 'cova',
             categoria: 'cova',
             titulo: 'Preparar a cova',
-            texto: `Misture na terra da cova: fósforo (${ad.cova.P2O5_g_cova} g de P2O5, classe ${ad.cova.classeP.rotulo}), 3 a 5 kg de esterco de curral (ou 1 a 2 kg de esterco de galinha, ou 0,5 a 1 kg de torta de mamona, ou 1 a 2 kg de palha de café), 0,6 a 1,0 g de boro e 1 a 2 g de zinco. Sem enxofre nas outras fontes, ponha 12 g de S. Fora o esterco de curral, espere 30 a 60 dias entre encher a cova e plantar. Onde o calcário já foi incorporado, a dose extra na cova cai à metade.`,
+            texto: `Misture na terra da cova: fósforo (${ad.cova.P2O5_g_cova} g de P2O5, classe ${ad.cova.classeP.rotulo}), 3 a 5 kg de esterco de curral (ou 1 a 2 kg de esterco de galinha, ou 0,5 a 1 kg de torta de mamona, ou 1 a 2 kg de palha de café), 0,6 a 1,0 g de boro e 1 a 2 g de zinco. Sem enxofre nas outras fontes, ponha 12 g de S. Fora o esterco de curral, espere 30 a 60 dias entre encher a cova e plantar.${
+              plano.calagem.complementarCova
+                ? ` Se o calcário já foi incorporado na área toda, ponha só ${fmt(plano.calagem.complementarCova.gCova, 0)} g de calcário por cova de 40 x 40 x 40 cm (ou ${fmt(plano.calagem.complementarCova.gMetroSulco, 0)} g por metro de sulco).`
+                : ''
+            }`,
             data: somarDias(plantio, -45),
             estimado: true,
             gatilho: 'O manual manda 30 a 60 dias entre encher a cova e plantar.',
@@ -310,7 +315,7 @@
     }
 
     const lim = horizonte;
-    const sMax = estacaoDe(plantio, lim);
+    const sMax = Math.min(2, estacaoDe(plantio, lim));
     const sHoje = estacaoDe(plantio, hoje);
     const sMin = Math.max(0, sHoje - (novo ? 0 : 1));
 
@@ -369,58 +374,21 @@
             )
           );
         });
-      } else {
-        const pr = ad.producao;
-        const arenoso = plano.solo.arenoso;
-        const n = arenoso ? 5 : pr.sc <= 30 ? 3 : 4;
-        const passo = n === 3 ? 56 : n === 4 ? 50 : 40;
-        datasEspacadas(outubro, n, passo).forEach((d, i) => {
-          m.push(
-            comDose(
-              {
-                id: `prod${k}-${i + 1}`,
-                categoria: 'cobertura',
-                titulo: `Adubação da safra (${i + 1} de ${n})`,
-                texto: `${i === 0 ? 'Todo o fósforo vai nesta primeira aplicação. ' : ''}Aplique entre o caule e a ponta dos ramos, ou em sulco sob a copa. ${
-                  pr.S > 0 && i === 0 ? `Se as fontes não tiverem enxofre, some ${fmt(pr.S / n)} kg/ha de S por aplicação (1/8 do N). ` : ''
-                }O manual pede de 3 a 4 aplicações a cada 40 a 60 dias${arenoso ? ' e mais aplicações em solo arenoso' : ''}.`,
-                data: d,
-                estimado: true,
-                gatilho: 'Datas espaçadas dentro de outubro a março, como manda o manual.',
-                fase: 'Lavoura em produção',
-                fonte: chave
-              },
-              { N: pr.N / n, P2O5: i === 0 ? pr.P2O5 : 0, K2O: pr.K2O / n, unidade: 'kg/ha' }
-            )
-          );
-        });
-        m.push(
-          marco({
-            id: `foliar${k}`,
-            categoria: 'foliar',
-            titulo: 'Colher folhas para a análise foliar',
-            texto:
-              'Na fase de chumbinho, antes de encher o grão, colha o 3º ou 4º par de folhas de ramos produtivos do meio da planta (100 folhas por área igual). O resultado ajusta o N das duas coberturas seguintes.',
-            data: monta(anoDe(inicio), 12, 10),
-            estimado: true,
-            gatilho: 'O manual manda amostrar em dezembro, no chumbinho, 30 dias depois da segunda adubação.',
-            fonte: chave
-          })
-        );
-        m.push(
-          marco({
-            id: `amostra${k}`,
-            categoria: 'amostragem',
-            titulo: 'Amostra anual do solo',
-            texto: 'Colha sob a projeção da copa, de 0 a 20 cm, pelo menos 60 dias depois da última adubação. Ela decide a calagem e a adubação da safra seguinte.',
-            data: monta(anoDe(inicio) + 1, 6, 1),
-            estimado: true,
-            gatilho: 'O manual manda amostrar todo ano, a partir de 60 dias depois da última adubação.',
-            fonte: chave
-          })
-        );
       }
     }
+
+    m.push(
+      marco({
+        id: 'prod-aviso',
+        categoria: 'manejo',
+        titulo: 'Daqui em diante: adubação de lavoura em produção',
+        texto: 'O manual traz as doses do 1º e do 2º ano. Se a lavoura tiver perspectiva de safra já no 2º ano, siga a recomendação de lavoura em produção. Quando chegar a hora, volte ao guia e escolha a fase Produção.',
+        data: monta(anoDe(inicioDaEstacao(plantio, 3)), 10, 15),
+        estimado: true,
+        gatilho: 'O manual separa a adubação de formação (1º e 2º ano) da de produção.',
+        fonte: chave
+      })
+    );
 
     if (!novo) {
       // Lavoura formada: calagem e gesso antes das adubações de outubro, a próxima janela que ainda vem.
@@ -460,6 +428,206 @@
       }
     }
     return m;
+  }
+
+  // ---------------------------------------------- café formado: produção e pós-poda
+  const proximoOutubro15 = (s) => {
+    const a = anoDe(s);
+    return s <= monta(a, 10, 15) ? monta(a, 10, 15) : monta(a + 1, 10, 15);
+  };
+
+  /** Amostragem anual, calagem e gesso de lavoura formada, antes da primeira adubação da safra (ref). */
+  function preparoFormada(plano, cult, ref) {
+    const chave = { sec: cult.sec, pag: cult.pag };
+    const m = [];
+    m.push(
+      marco({
+        id: 'amostra',
+        categoria: 'amostragem',
+        titulo: 'Colher a amostra anual do solo',
+        texto:
+          'Colha sob a projeção da copa (onde vão os adubos), de 0 a 20 cm, pelo menos 60 dias depois da última adubação ou depois de esparramar o cisco. Ela é a base da calagem e da adubação da safra. De 4 em 4 anos, colha também no meio da rua (0 a 20 cm) e de 20 a 40 cm sob a copa.',
+        data: somarDias(ref, -75),
+        estimado: true,
+        gatilho: 'O manual manda amostrar todo ano, a partir de 60 dias depois da última adubação.',
+        fonte: chave
+      })
+    );
+    if (plano.calagem.precisa) {
+      m.push(
+        marco({
+          id: 'calagem',
+          categoria: 'calagem',
+          titulo: 'Espalhar o calcário',
+          texto: `Aplique ${fmt(plano.calagem.QC)} t/ha de calcário com PRNT ${fmt(plano.calagem.usar.PRNT)}%${plano.calagem.dolomitico ? ', de preferência dolomítico' : ''}, ${
+            plano.calagem.usar.SC < 100 ? 'em faixa sob a copa' : 'na superfície toda'
+          }, sem poder incorporar fundo (a dose já considera ${plano.calagem.usar.PF} cm). O solo precisa de umidade.`,
+          data: somarDias(ref, -61),
+          fim: somarDias(ref, -30),
+          estimado: true,
+          gatilho: 'Em lavoura formada, antes das adubações da safra, com a amostra anual na mão.',
+          dose: { calcarioTha: plano.calagem.QC },
+          fonte: FONTE_CAL
+        })
+      );
+    }
+    if (plano.gesso && plano.gesso.indicado) {
+      m.push(
+        marco({
+          id: 'gesso',
+          categoria: 'gesso',
+          titulo: 'Espalhar o gesso agrícola',
+          texto: `Aplique ${fmt(plano.gesso.QG)} t/ha de gesso, junto com o calcário ou logo depois, sob a copa. Em lavoura formada o gesso leva cálcio para baixo, onde o calcário não entra.`,
+          data: somarDias(ref, -30),
+          estimado: true,
+          gatilho: 'O manual indica o gesso para a camada de 20 a 40 cm com pouco cálcio ou muito alumínio.',
+          dose: { gessoTha: plano.gesso.QG },
+          fonte: FONTE_GESSO
+        })
+      );
+    }
+    return m;
+  }
+
+  /** Parcelas de uma safra: N, K e S divididos; fósforo todo na primeira; folha 30 dias depois da 2ª. */
+  function parcelasProducao(plano, cult, inicio, id, fase) {
+    const chave = { sec: cult.sec, pag: cult.pag };
+    const pr = plano.adubacao.producao;
+    const arenoso = plano.solo.arenoso;
+    const n = arenoso ? 5 : pr.sc <= 30 ? 3 : 4;
+    const passo = n === 3 ? 56 : n === 4 ? 50 : 40;
+    const datas = datasEspacadas(inicio, n, passo);
+    const m = [];
+    datas.forEach((d, i) => {
+      m.push(
+        comDose(
+          {
+            id: `${id}-${i + 1}`,
+            categoria: 'cobertura',
+            titulo: `Adubação da safra (${i + 1} de ${n})`,
+            texto: `${i === 0 ? 'Todo o fósforo vai nesta primeira aplicação. ' : ''}Aplique entre o caule e a ponta dos ramos, ou em sulco sob a copa. ${
+              pr.S > 0 && i === 0 ? `Se as fontes não tiverem enxofre, some ${fmt(pr.S / n)} kg/ha de S por aplicação (1/8 do N). ` : ''
+            }O manual pede de 3 a 4 aplicações a cada 40 a 60 dias${arenoso ? ' e mais aplicações em solo arenoso' : ''}.`,
+            data: d,
+            estimado: true,
+            gatilho: 'Datas espaçadas dentro de outubro a março, como manda o manual.',
+            fase,
+            fonte: chave
+          },
+          { N: pr.N / n, P2O5: i === 0 ? pr.P2O5 : 0, K2O: pr.K2O / n, unidade: 'kg/ha' }
+        )
+      );
+    });
+    if (n >= 2) {
+      m.push(
+        marco({
+          id: `${id}-foliar`,
+          categoria: 'foliar',
+          titulo: 'Colher folhas para a análise foliar',
+          texto:
+            'Na fase de chumbinho, antes de encher o grão, colha o 3º ou 4º par de folhas de ramos produtivos do meio da planta, dois pares por planta, em 25 plantas (100 folhas) por área igual. O teor de N ajusta as duas coberturas seguintes; com 3,5 dag/kg ou mais depois da 2ª aplicação, cancele a 3ª ou a 4ª.',
+          data: somarDias(datas[1], 30),
+          estimado: true,
+          gatilho: 'O manual manda amostrar em dezembro, no chumbinho, pelo menos 30 dias depois da 2ª parcela.',
+          fonte: chave
+        })
+      );
+    }
+    const micros = (pr.micros || []).filter((x) => x.dose_kg_ha > 0);
+    if (micros.length) {
+      m.push(
+        marco({
+          id: `${id}-micros`,
+          categoria: 'micronutriente',
+          titulo: 'Micronutrientes no começo das chuvas',
+          texto: `Pelo seu laudo: ${micros.map((x) => `${x.elemento} ${fmt(x.dose_kg_ha)} kg/ha (classe ${x.classe})`).join('; ')}. Boro vai no solo, sob a copa, no começo do período chuvoso. Zinco: no solo em textura arenosa ou média, nas folhas (2 a 4 vezes por ano) em solo argiloso. Manganês, nas folhas.`,
+          data: inicio,
+          estimado: true,
+          gatilho: 'O manual manda no início do período chuvoso.',
+          fonte: chave
+        })
+      );
+    }
+    return m;
+  }
+
+  /** Café, fase PRODUÇÃO: a data informada é a da primeira adubação da safra (em geral em outubro). */
+  function cafeProducao(plano, cult, ref) {
+    return preparoFormada(plano, cult, ref).concat(parcelasProducao(plano, cult, ref, 'prod', 'Lavoura em produção'));
+  }
+
+  /** Início das adubações depois de uma poda: o primeiro 15 de outubro em ou depois da poda. */
+  const inicioPosPoda = (poda) => proximoOutubro15(poda);
+
+  /** Café, fase PÓS-PODA: recepa ou esqueletamento (1º ano com a dose do 2º ano) e demais podas (dose de produção). */
+  function cafePoda(plano, cult, poda, hoje, horizonte) {
+    const ad = plano.adubacao;
+    const chave = { sec: cult.sec, pag: cult.pag };
+    const start1 = inicioPosPoda(poda);
+    const m = preparoFormada(plano, cult, start1);
+    m.push(
+      marco({
+        id: 'poda-zn',
+        categoria: 'foliar',
+        titulo: 'Zinco nas folhas das brotações novas',
+        texto: 'As brotações novas costumam surgir com falta de zinco. Pulverize sulfato de zinco a 5 g/L (com 3 g/L de cloreto de potássio para absorver melhor), de 2 a 4 vezes no ano, espaçadas.',
+        data: somarDias(poda, 45),
+        estimado: true,
+        gatilho: 'O manual manda adubar as brotações com zinco nas folhas; o prazo de 45 dias é nosso.',
+        fonte: chave
+      })
+    );
+    let inicioProd = start1;
+    if (ad.poda.tipo === 'recepa') {
+      const f = ad.posPoda;
+      if (f.dispensada) {
+        m.push(
+          marco({
+            id: 'poda-ano1-dispensa',
+            categoria: 'manejo',
+            titulo: '1º ano depois da poda: adubação dispensada',
+            texto: 'Você marcou brotações vigorosas. O manual dispensa a adubação do 1º ano depois da recepa ou do esqueletamento, porque sobra adubo das aplicações anteriores. Se as brotações enfraquecerem, volte e desmarque essa opção.',
+            data: start1,
+            estimado: true,
+            gatilho: 'O manual dispensa a adubação quando as brotações são vigorosas.',
+            fase: '1º ano depois da poda',
+            fonte: chave
+          })
+        );
+      } else {
+        datasEspacadas(start1, 4, 45).forEach((d, i) => {
+          m.push(
+            comDose(
+              {
+                id: `poda-ano1-${i + 1}`,
+                categoria: 'cobertura',
+                titulo: `Cobertura do 1º ano depois da poda (${i + 1} de 4)`,
+                texto: `No 1º ano depois da recepa ou do esqueletamento vale a adubação do 2º ano: N de ${f.N_g_cova_aplicacao} g por cova por aplicação; o potássio do ano é dividido entre as 4. Aplique na superfície, entre o caule e a ponta dos ramos.`,
+                data: d,
+                estimado: true,
+                gatilho: 'O manual manda de 3 a 4 aplicações de outubro a março; usamos 4.',
+                fase: '1º ano depois da poda',
+                fonte: chave
+              },
+              { N: f.N_g_cova_aplicacao, P2O5: 0, K2O: f.K2O_g_cova_ano / 4, unidade: 'g/cova' }
+            )
+          );
+        });
+      }
+      inicioProd = somarMeses(start1, 12);
+    }
+    for (let ini = inicioProd, k = 0; ini <= horizonte && k < 3; ini = somarMeses(ini, 12), k++) {
+      m.push(...parcelasProducao(plano, cult, ini, `prod${anoDe(ini)}`, ad.poda.tipo === 'recepa' ? 'A partir do 2º ano depois da poda' : 'Lavoura em produção'));
+    }
+    return m;
+  }
+
+  /** Despacha pela fase do café. `data` é o plantio, a 1ª adubação da safra ou a poda. */
+  function cafe(plano, cult, data, hoje, horizonte) {
+    const fase = plano.adubacao.fase;
+    if (fase === 'producao') return cafeProducao(plano, cult, data);
+    if (fase === 'poda') return cafePoda(plano, cult, data, hoje, horizonte);
+    return cafePlantio(plano, cult, data, hoje, horizonte);
   }
 
   // ------------------------------------------------------------------ frutas
@@ -701,7 +869,15 @@
     const avisos = [];
     let marcos = [];
     const perene = cult.tipo === 'perene';
-    const horizonte = perene ? somarMeses(plantio > hoje ? plantio : hoje, 36) : somarDias(plantio, 160);
+    const faseCafe = cult.grupo === 'cafe' ? plano.adubacao.fase : null;
+    const horizonte =
+      faseCafe === 'producao'
+        ? somarDias(plantio, 280)
+        : faseCafe === 'poda'
+        ? somarMeses(plantio, 36)
+        : perene
+        ? somarMeses(plantio > hoje ? plantio : hoje, 36)
+        : somarDias(plantio, 160);
 
     if (perene) {
       marcos = cult.grupo === 'cafe' ? cafe(plano, cult, plantio, hoje, horizonte) : fruta(plano, cult, plantio, hoje, horizonte, avisos);
@@ -712,14 +888,25 @@
     // Alertas
     const novo = plantio >= hoje;
     const mesPlantio = mesDe(plantio);
-    if (perene && novo && cult.janelaPlantio && !cult.janelaPlantio.meses.includes(mesPlantio)) {
+    if (perene && novo && cult.janelaPlantio && !cult.janelaPlantio.meses.includes(mesPlantio) && (!faseCafe || faseCafe === 'plantio')) {
       avisos.push({
         tipo: 'janela',
         texto: `${cult.fonteCurta || 'O manual'} manda plantar ${cult.janelaPlantio.texto}. Em ${mesNome(mesPlantio)} a muda pega com menos chuva pela frente. Se puder, mude a data.`
       });
     }
     const precisaPreparo = plano.calagem.precisa || (plano.gesso && plano.gesso.indicado);
-    if (novo && precisaPreparo) {
+    const posPlantio = faseCafe && faseCafe !== 'plantio';
+    if (posPlantio && precisaPreparo) {
+      const referencia = faseCafe === 'poda' ? inicioPosPoda(plantio) : plantio;
+      const dias = diasEntre(hoje, referencia);
+      if (dias >= 0 && dias < 60) {
+        avisos.push({
+          tipo: 'calagem-atrasada',
+          texto: `Faltam só ${dias} dias para a primeira adubação da safra. O manual manda o calcário antes, com umidade no solo. Aplique assim mesmo se o solo tiver umidade; sem umidade o calcário não reage.`
+        });
+      }
+    }
+    if (novo && precisaPreparo && !posPlantio) {
       const dias = diasEntre(hoje, plantio);
       if (dias < 60) {
         avisos.push({
@@ -737,7 +924,7 @@
         texto: 'A data de plantio já passou. O calendário mostra tudo, mas só dá tempo das coberturas que ainda não venceram.'
       });
     }
-    if (!novo && perene) {
+    if (!novo && perene && !posPlantio) {
       const anos = Math.round(diasEntre(plantio, hoje) / 365.25);
       avisos.push({
         tipo: 'lavoura-formada',
@@ -762,11 +949,16 @@
     // Fase atual
     let fase = null;
     if (perene) {
-      if (novo) fase = { rotulo: 'Antes do plantio', detalhe: 'Preparo da área, da cova e das mudas.' };
+      if (faseCafe === 'producao') fase = { rotulo: 'Lavoura em produção', detalhe: '' };
+      else if (faseCafe === 'poda') {
+        const recepa = plano.adubacao.poda.tipo === 'recepa';
+        const segundo = somarMeses(inicioPosPoda(plantio), 12);
+        fase = { rotulo: recepa && hoje < segundo ? 'Poda: 1º ano' : 'Lavoura em produção', detalhe: '' };
+      } else if (novo) fase = { rotulo: 'Antes do plantio', detalhe: 'Preparo da área, da cova e das mudas.' };
       else {
         const k = estacaoDe(plantio, hoje);
         const f = cult.grupo === 'cafe' ? null : fasePorEstacao(cult, k);
-        const cafeRotulo = k === 0 ? 'Depois do plantio' : k <= 2 ? `${k}º ano` : 'Lavoura em produção';
+        const cafeRotulo = k === 0 ? 'Depois do plantio' : k <= 2 ? `${k}º ano` : 'Depois do 2º ano';
         fase = { rotulo: cult.grupo === 'cafe' ? cafeRotulo : f ? f.titulo : 'Além das tabelas do manual', detalhe: '' };
       }
     } else {
@@ -783,6 +975,8 @@
     inicioDaEstacao,
     estacaoDe,
     proximoAgosto,
+    proximoOutubro15,
+    inicioPosPoda,
     montar,
     mesNome
   };

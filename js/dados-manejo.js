@@ -24,58 +24,127 @@
 
   const fmt = (n) => (Math.round(n * 10) / 10).toString().replace('.', ',');
 
+  // Cada cartão do café diz em que fases vale: plantio, producao, poda.
+  const TODAS = ['plantio', 'producao', 'poda'];
+  const FORMADA = ['producao', 'poda'];
   const cafe = [
     {
-      id: 'cafe-amostragem',
+      id: 'cafe-amostragem-plantio',
+      fases: ['plantio'],
       tema: 'solo',
-      titulo: 'Onde e quando colher a amostra',
+      titulo: 'Amostra antes de plantar',
       texto:
-        'Antes de plantar, colha de 0 a 20 cm e de 20 a 40 cm na mesma perfuração: a de baixo mostra a acidez do subsolo. Em lavoura formada, colha sob a copa, de 0 a 20 cm, todo ano, pelo menos 60 dias depois da última adubação. A cada 4 anos, colha também no meio da rua e de 20 a 40 cm sob a copa.',
+        'Colha de 0 a 20 cm e de 20 a 40 cm na mesma perfuração. A de baixo serve para saber a acidez do subsolo (cálcio, alumínio, pH e m) e se a lavoura pede um manejo diferente de correção, como o gesso.',
       fonte: F.cafe
     },
     {
-      id: 'cafe-calagem-modo',
+      id: 'cafe-amostragem-formada',
+      fases: FORMADA,
       tema: 'solo',
-      titulo: 'Calcário em faixa ou na área toda',
+      titulo: 'Onde e quando colher a amostra',
       texto:
-        'Em lavoura nova ou de espaçamento largo, aplique o calcário em faixa sob a copa, onde estão quase todas as raízes e a acidez é maior. Em lavoura adensada, espalhe na superfície toda. Ao plantar, incorpore o mais fundo possível. Em área acidentada, ponha o calcário na cova e numa faixa de plantio que alarga conforme o café cresce.',
+        'Em lavoura formada, colha sob a projeção da copa, de 0 a 20 cm, todo ano, pelo menos 60 dias depois da última adubação ou depois de esparramar o cisco. A amostra é a base da calagem e da adubação da safra seguinte. De 4 em 4 anos, colha também no meio da rua e de 20 a 40 cm sob a copa: a rua mostra o grau de acidificação, e a de baixo mostra a lixiviação de nutrientes.',
+      fonte: F.cafe
+    },
+    {
+      id: 'cafe-calagem-plantio',
+      fases: ['plantio'],
+      tema: 'solo',
+      titulo: 'Calcário na implantação',
+      texto:
+        'Incorpore o calcário o mais fundo possível, na implantação. Em lavoura nova ou de espaçamento largo, aplique em faixa na projeção da copa, onde estão quase todas as raízes. Em lavoura adensada, espalhe na superfície toda. Em área acidentada, onde é difícil incorporar, ponha o calcário na cova e numa faixa de plantio que alarga conforme o café cresce.',
+      fonte: F.cafe
+    },
+    {
+      id: 'cafe-calcario-cova',
+      fases: ['plantio'],
+      tema: 'solo',
+      titulo: 'Calcário complementar na cova',
+      texto:
+        'Se você já incorporou calcário na área (de 0 a 20 cm), a dose extra na cova ou no sulco cai à metade. A conta do manual: a necessidade de calagem em t/ha, vezes o volume de solo da cova em dm³, dividido por 2. Para NC de 3 t/ha numa cova de 40 x 40 x 40 cm (64 dm³), dão 96 g, ou cerca de 100 g por cova; por metro de sulco, multiplique por 2,5. Esse calcário pode ser mais grosso, contando o PRNT como 100%.',
+      fonte: F.cafe,
+      quando: (p) =>
+        p.calagem && p.calagem.complementarCova
+          ? `Para a sua necessidade de calagem: ${fmt(p.calagem.complementarCova.gCova)} g por cova de 40 x 40 x 40 cm, ou ${fmt(p.calagem.complementarCova.gMetroSulco)} g por metro de sulco.`
+          : null
+    },
+    {
+      id: 'cafe-calagem-formada',
+      fases: FORMADA,
+      tema: 'solo',
+      titulo: 'Calcário em lavoura formada',
+      texto:
+        'Onde não dá para incorporar, calcule a quantidade pela superfície de aplicação (faixa ou área toda), pela profundidade de incorporação (cerca de 7 cm, ou 5 cm quando só se espalha) e pelo PRNT. Em lavoura nova ou de espaçamento largo, use faixa sob a copa; em lavoura adensada, a superfície toda.',
       fonte: F.cafe
     },
     {
       id: 'cafe-gesso',
+      fases: TODAS,
       tema: 'solo',
       titulo: 'Gesso quando o calcário não desce',
       texto:
-        'Em lavoura já formada não dá para incorporar o calcário. O gesso indicado leva cálcio para baixo e melhora o ambiente das raízes. Vale quando a camada de 20 a 40 cm tem cálcio de 0,4 ou menos, alumínio acima de 0,5 ou m acima de 30%.',
+        'Em lavoura já implantada não dá para incorporar o calcário. O gesso leva cálcio para baixo e melhora o ambiente das raízes. Vale quando a camada de 20 a 40 cm tem cálcio de 0,4 ou menos, alumínio acima de 0,5 ou m acima de 30%. Na implantação o gesso também entra na terra da cova, de 200 a 300 g por cova ou metro de sulco, onde o subsolo pedir.',
       fonte: F.cafe,
       quando: (p) => (p.gesso && p.gesso.indicado ? 'O gesso está indicado para o seu subsolo.' : null)
     },
     {
       id: 'cafe-corretiva',
+      fases: ['plantio'],
       tema: 'solo',
       titulo: 'Adubação corretiva antes de plantar',
       texto:
-        'Em solo de baixa fertilidade ou plantio adensado, o manual propõe corrigir antes: calagem, gesso, fósforo, potássio e micronutrientes. Depois vem uma adubação verde com leguminosa, incorporada no florescimento, e só então o sulco e o plantio das mudas.',
+        'Em solo de baixa fertilidade ou plantio adensado, o manual propõe corrigir antes: calagem, gessagem, fósforo, potássio e micronutrientes. Depois vem uma adubação verde com leguminosas, incorporadas no florescimento, e só então o sulcamento e o plantio das mudas.',
+      fonte: F.cafe
+    },
+    {
+      id: 'cafe-verde',
+      fases: FORMADA,
+      tema: 'solo',
+      titulo: 'Adubação verde nas ruas',
+      texto:
+        'Em lavoura formada, a adubação verde pode ser o "cultivo do mato": manejado com roçadeira e herbicida de contato, forma uma cobertura morta que protege o solo e incorpora matéria orgânica. O resíduo da arruação e o calcário nas entrelinhas dão bom desenvolvimento ao mato para esse manejo.',
+      fonte: F.cafe
+    },
+    {
+      id: 'cafe-cova-adubo',
+      fases: ['plantio'],
+      tema: 'nutricao',
+      titulo: 'Adubo na terra da cova',
+      texto:
+        'O fósforo da cova vem da classe do seu solo (Quadro 18.4.6.1). Como alternativa, de 200 a 400 g por cova ou metro de sulco de fosfato natural, completando o P₂O₅ com adubo mais solúvel como o superfosfato simples. Boro e zinco podem ir na terra da cova: de 0,6 a 1,0 g de B e de 1,0 a 2,0 g de Zn. Se as fontes de N e P não tiverem enxofre, ponha 12 g de S por cova ou metro de sulco.',
+      fonte: F.cafe,
+      quando: (p) => (p.adubacao && p.adubacao.cova ? `Fósforo em classe ${p.adubacao.cova.classeP.rotulo}: ${p.adubacao.cova.P2O5_g_cova} g de P2O5 por cova.` : null)
+    },
+    {
+      id: 'cafe-pos-plantio',
+      fases: ['plantio'],
+      tema: 'nutricao',
+      titulo: 'Coberturas do pegamento, do 1º e do 2º ano',
+      texto:
+        'Depois do pegamento das mudas, aplique N (de 3 a 5 g por cova por vez) a cada 30 a 45 dias, do plantio até o fim das chuvas, em círculo, a pelo menos 5 cm do caule. O potássio vem pela classe de K do solo e pode ir em 2 a 3 aplicações. No 1º e no 2º ano, de 3 a 4 aplicações de outubro a março, na superfície, entre o caule e a ponta dos ramos. Com doses adequadas na cova, a adubação fosfatada dessa fase pode ser dispensada.',
       fonte: F.cafe
     },
     {
       id: 'cafe-parcelar',
+      fases: FORMADA,
       tema: 'nutricao',
       titulo: 'Parcelar de outubro a março',
       texto:
-        'Divida N e K em 3 a 4 aplicações no período chuvoso, com 40 a 60 dias entre elas; em solo arenoso, divida em mais vezes. Todo o fósforo vai na primeira aplicação. Espalhe entre o caule e a ponta dos ramos, ou em sulco sob a copa.',
+        'Divida N e K em 3 a 4 aplicações no período chuvoso, com 40 a 60 dias entre elas; em solo arenoso, divida em mais vezes. Todo o fósforo vai na primeira aplicação. Espalhe entre o caule e a ponta dos ramos, ou em sulco sob a copa. Na fertirrigação, aumente o número de aplicações.',
       fonte: F.cafe
     },
     {
       id: 'cafe-foliar-n',
+      fases: FORMADA,
       tema: 'nutricao',
       titulo: 'Acertar o nitrogênio pela folha',
       texto:
-        'Em dezembro, no chumbinho, colha folhas e veja o teor de N. Ele ajusta as duas coberturas seguintes. Se, depois da segunda aplicação, o teor já estiver em 3,5 dag/kg ou mais, cancele a terceira ou a quarta.',
+        'Em dezembro, no chumbinho (antes de encher o grão), colha o 3º ou 4º par de folhas de ramos produtivos do meio da planta: dois pares por planta, nos dois lados do renque, em 25 plantas por área igual (100 folhas). Faça isso pelo menos 30 dias depois da 2ª parcela. O teor de N ajusta as duas coberturas seguintes; se, depois da segunda aplicação, ele já estiver em 3,5 dag/kg ou mais, cancele a terceira ou a quarta.',
       fonte: F.cafe
     },
     {
       id: 'cafe-enxofre',
+      fases: FORMADA,
       tema: 'nutricao',
       titulo: 'Enxofre',
       texto:
@@ -84,7 +153,8 @@
       quando: (p) => (p.adubacao && p.adubacao.producao ? `Para a sua dose de N, isso dá ${fmt(p.adubacao.producao.S)} kg/ha de S por ano.` : null)
     },
     {
-      id: 'cafe-organico',
+      id: 'cafe-organico-plantio',
+      fases: ['plantio'],
       tema: 'nutricao',
       titulo: 'Adubo orgânico na cova',
       texto:
@@ -92,7 +162,17 @@
       fonte: F.cafe
     },
     {
+      id: 'cafe-organico-formada',
+      fases: FORMADA,
+      tema: 'nutricao',
+      titulo: 'Adubo orgânico na lavoura formada',
+      texto:
+        'Os orgânicos podem entrar na conta pelos nutrientes que trazem, completados com adubo mineral. Aplique em cobertura sob a copa, ou enterre em covas ou sulcos na projeção da copa. A palha de café não deve ser enterrada.',
+      fonte: F.cafe
+    },
+    {
       id: 'cafe-micros',
+      fases: TODAS,
       tema: 'nutricao',
       titulo: 'Boro, zinco, cobre e manganês',
       texto:
@@ -107,6 +187,7 @@
     },
     {
       id: 'cafe-bienalidade',
+      fases: FORMADA,
       tema: 'planta',
       titulo: 'Não adube pouco no ano fraco',
       texto:
@@ -114,15 +195,31 @@
       fonte: F.cafe
     },
     {
-      id: 'cafe-poda',
+      id: 'cafe-poda-recepa',
+      fases: ['poda'],
       tema: 'planta',
-      titulo: 'Depois da poda',
+      titulo: 'Adubação depois de recepa ou esqueletamento',
       texto:
-        'Recepa e esqueletamento: no 1º ano depois da poda, siga a adubação do 2º ano, e dispense se a brotação for vigorosa. Do 2º ano em diante, siga a de lavoura em produção. Nas outras podas, siga a de produção. Brotações novas costumam faltar zinco: use adubo foliar.',
+        'No 1º ano depois da recepa ou do esqueletamento, siga a adubação do 2º ano (a de formação). Se as brotações forem vigorosas, a adubação é dispensada, por causa do resíduo que ficou das adubações anteriores. Do 2º ano depois da poda em diante, siga a de lavoura em produção, porque as plantas já têm perspectiva de colheita.',
+      fonte: F.cafe,
+      quando: (p) => {
+        const ad = p.adubacao;
+        if (!ad || ad.fase !== 'poda') return null;
+        if (ad.poda.tipo !== 'recepa') return 'Você marcou outro tipo de poda: vale a adubação de produção desde o 1º ano.';
+        return ad.poda.vigorosa ? 'Você marcou brotações vigorosas: a adubação do 1º ano está dispensada.' : 'Brotações não vigorosas: vale a adubação do 2º ano já no 1º ano depois da poda.';
+      }
+    },
+    {
+      id: 'cafe-poda-outras',
+      fases: ['poda'],
+      tema: 'planta',
+      titulo: 'Demais tipos de poda',
+      texto: 'Nas outras podas, siga as recomendações de adubação para cafeeiros em produção. As brotações novas costumam surgir com falta de zinco: precisam de adubação foliar para se desenvolver bem.',
       fonte: F.cafe
     },
     {
       id: 'cafe-manganes',
+      fases: TODAS,
       tema: 'atencao',
       titulo: 'Falta de manganês quase sempre é calagem demais',
       texto:
@@ -131,6 +228,7 @@
     },
     {
       id: 'cafe-ctc',
+      fases: TODAS,
       tema: 'atencao',
       titulo: 'CTC fora da faixa boa',
       texto:
@@ -564,6 +662,7 @@
     const tipo = variante && variante.tipo;
     return lista
       .filter((c) => !c.so || c.so === tipo)
+      .filter((c) => !c.fases || c.fases.includes((variante && variante.fase) || 'plantio'))
       .map((c) => {
         let laudo = null;
         try {

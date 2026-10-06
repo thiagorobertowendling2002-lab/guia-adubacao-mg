@@ -231,24 +231,6 @@ test('café 1º e 2º ano: 4 aplicações de outubro a março, N por aplicação
   assert.ok(a2.every((m) => m.dose.N === 20));
 });
 
-test('café em produção: fósforo só na primeira aplicação e as doses somam o total do ano', () => {
-  const { plano, cal } = montar('cafe', { sistema: 'adensado', sc: 45 }, '2021-11-01');
-  const pr = plano.adubacao.producao;
-  const safra = cal.marcos.filter((m) => /^prod5-/.test(m.id));
-  assert.equal(safra.length, 4);
-  assert.ok(safra[0].dose.P2O5 === pr.P2O5 && safra.slice(1).every((m) => m.dose.P2O5 === 0));
-  assert.ok(Math.abs(soma(safra.map((m) => m.dose.N)) - pr.N) < 1e-9);
-  assert.ok(Math.abs(soma(safra.map((m) => m.dose.K2O)) - pr.K2O) < 1e-9);
-  assert.ok(cal.marcos.some((m) => m.id === 'foliar5'), 'análise foliar em dezembro');
-});
-
-test('café em produção em solo arenoso aumenta o parcelamento para 5', () => {
-  const { cal } = montar('cafe', { sistema: 'tradicional', sc: 35 }, '2021-11-01', HOJE, {
-    analise: { pH: 5.2, P: 3, K: 20, Ca: 1, Mg: 0.4, Al: 0.2, HAl: 2.5, argila: 10 }
-  });
-  assert.equal(cal.marcos.filter((m) => /^prod5-/.test(m.id)).length, 5);
-});
-
 test('café formado: calagem na janela de agosto a setembro que ainda vem', () => {
   const { cal } = montar('cafe', { sistema: 'tradicional', sc: 35 }, '2021-11-01');
   const c = achar(cal, 'calagem');
@@ -294,4 +276,94 @@ test('pitaya plantada fora de novembro gera aviso de janela da cartilha', () => 
   const a = cal.avisos.find((x) => x.tipo === 'janela');
   assert.ok(a);
   assert.match(a.texto, /A cartilha manda plantar/);
+});
+
+// ------------------------------------------------- café em três fases (seção 18.4.6)
+const cafeEm = (fase, data, variante = {}, extra = {}, hoje = HOJE) => {
+  const plano = M.plano(Object.assign({ cultura: 'cafe', variante: Object.assign({ fase, sistema: 'tradicional', sc: 35 }, variante), analise: solo, subsolo: sub, manejo: { PRNT: 85, PF: 7, SC: 75 } }, extra));
+  assert.equal(plano.ok, true);
+  return { plano, cal: K.montar(plano, { plantio: data, hoje }) };
+};
+
+test('café, fase plantio: só cova, pós-plantio, 1º e 2º ano, e um aviso de que a produção é outra fase', () => {
+  const { cal } = cafeEm('plantio', '2026-11-10');
+  assert.ok(cal.marcos.some((m) => /^ano2-/.test(m.id)));
+  assert.equal(cal.marcos.some((m) => /^prod/.test(m.id) && m.id !== 'prod-aviso'), false, 'sem safra no plantio');
+  const aviso = achar(cal, 'prod-aviso');
+  assert.ok(aviso);
+  assert.match(aviso.texto, /Produção/);
+});
+
+test('café, fase plantio: calcário complementar na cova segue o exemplo do manual (NC 3 t/ha, cova de 64 dm3 = 96 g; sulco x2,5)', () => {
+  const c = M.calcarioComplementarCova(3, 64);
+  assert.equal(c.gCova, 96);
+  assert.equal(c.gMetroSulco, 240);
+  const { plano } = cafeEm('plantio', '2027-02-01');
+  assert.ok(plano.calagem.complementarCova.gCova > 0);
+  assert.equal(plano.calagem.complementarCova.gCova, (plano.calagem.NC * 64) / 2);
+});
+
+test('café, fase produção: parcelas a partir da data da 1ª adubação, fósforo só na primeira, doses somam o total do ano', () => {
+  const { plano, cal } = cafeEm('producao', '2026-10-15', { sistema: 'adensado', sc: 45 });
+  const pr = plano.adubacao.producao;
+  const safra = cal.marcos.filter((m) => /^prod-\d$/.test(m.id));
+  assert.equal(safra.length, 4);
+  assert.deepEqual(safra.map((m) => m.data), ['2026-10-15', '2026-12-04', '2027-01-23', '2027-03-14']);
+  assert.ok(safra[0].dose.P2O5 === pr.P2O5 && safra.slice(1).every((m) => m.dose.P2O5 === 0));
+  assert.ok(Math.abs(soma(safra.map((m) => m.dose.N)) - pr.N) < 1e-9);
+  assert.ok(Math.abs(soma(safra.map((m) => m.dose.K2O)) - pr.K2O) < 1e-9);
+  assert.equal(cal.fase.rotulo, 'Lavoura em produção');
+  assert.equal(cal.marcos.some((m) => /^(cova|plantio|pos-|ano1|ano2)/.test(m.id)), false);
+});
+
+test('café, fase produção: folha 30 dias depois da 2ª parcela; amostra 75 dias antes; calagem e gesso antes da safra', () => {
+  const { cal } = cafeEm('producao', '2026-10-15', { sistema: 'adensado', sc: 45 });
+  assert.equal(achar(cal, 'prod-foliar').data, '2027-01-03');
+  assert.equal(achar(cal, 'amostra').data, '2026-08-01');
+  assert.equal(achar(cal, 'calagem').data, '2026-08-15');
+  assert.equal(achar(cal, 'calagem').fim, '2026-09-15');
+  assert.equal(achar(cal, 'gesso').data, '2026-09-15');
+});
+
+test('café, fase produção em solo arenoso aumenta o parcelamento para 5', () => {
+  const { cal } = cafeEm('producao', '2026-10-15', {}, { analise: { pH: 5.2, P: 3, K: 20, Ca: 1, Mg: 0.4, Al: 0.2, HAl: 2.5, argila: 10 } });
+  assert.equal(cal.marcos.filter((m) => /^prod-\d$/.test(m.id)).length, 5);
+});
+
+test('café, pós-poda por recepa: 1º ano com a dose do 2º ano (N 20 g/cova) e produção a partir do 2º ano', () => {
+  const { plano, cal } = cafeEm('poda', '2026-08-10', { poda: 'recepa' });
+  const ano1 = cal.marcos.filter((m) => /^poda-ano1-\d$/.test(m.id));
+  assert.equal(ano1.length, 4);
+  assert.ok(ano1.every((m) => m.dose.N === plano.adubacao.ano2.N_g_cova_aplicacao && m.dose.N === 20));
+  assert.deepEqual(ano1.map((m) => m.data), ['2026-10-15', '2026-11-29', '2027-01-13', '2027-02-27']);
+  const prod = cal.marcos.filter((m) => /^prod2027-\d$/.test(m.id));
+  assert.ok(prod.length >= 3, 'produção a partir do 2º ano, em outubro de 2027');
+  assert.equal(prod[0].data, '2027-10-15');
+  assert.equal(cal.fase.rotulo, 'Poda: 1º ano');
+  assert.ok(achar(cal, 'poda-zn'), 'zinco foliar nas brotações');
+});
+
+test('café, pós-poda por recepa com brotação vigorosa: adubação do 1º ano dispensada', () => {
+  const { cal } = cafeEm('poda', '2026-08-10', { poda: 'recepa', vigorosa: true });
+  assert.equal(cal.marcos.some((m) => /^poda-ano1-\d$/.test(m.id)), false);
+  const d = achar(cal, 'poda-ano1-dispensa');
+  assert.ok(d);
+  assert.match(d.texto, /dispensa/);
+  assert.ok(cal.marcos.some((m) => /^prod2027-\d$/.test(m.id)), 'a produção continua no 2º ano');
+});
+
+test('café, pós-poda de outro tipo: já vale a adubação de produção, sem tabela de 1º ano', () => {
+  const { plano, cal } = cafeEm('poda', '2026-08-10', { poda: 'outra' });
+  assert.equal(plano.adubacao.posPoda, null);
+  assert.equal(cal.marcos.some((m) => /^poda-ano1/.test(m.id)), false);
+  const prod = cal.marcos.filter((m) => /^prod2026-\d$/.test(m.id));
+  assert.ok(prod.length >= 3);
+  assert.equal(prod[0].data, '2026-10-15');
+  assert.equal(cal.fase.rotulo, 'Lavoura em produção');
+});
+
+test('café, pós-poda: poda feita durante as chuvas começa a adubar só no outubro seguinte', () => {
+  assert.equal(K.inicioPosPoda('2026-12-01'), '2027-10-15');
+  assert.equal(K.inicioPosPoda('2026-10-15'), '2026-10-15');
+  assert.equal(K.inicioPosPoda('2026-08-10'), '2026-10-15');
 });

@@ -143,8 +143,9 @@
     passo: 1,
     grupo: null,
     fruta: 'citros',
-    variante: { sistema: 'tradicional', sc: '25', Nfoliar: '', tipo: 'grao', produtividade: '7', sojaAntes: false, plantioDireto: false, nivel: '2' },
+    variante: { fase: 'plantio', poda: 'recepa', vigorosa: false, sistema: 'tradicional', sc: '25', Nfoliar: '', tipo: 'grao', produtividade: '7', sojaAntes: false, plantioDireto: false, nivel: '2' },
     scTocado: false,
+    manejoTocado: false,
     prodTocada: false,
     analise: {},
     Kunidade: 'mg',
@@ -182,6 +183,23 @@
       estado = PADRAO();
     }
   };
+
+  /**
+   * Calcário do café: na implantação entra fundo (0 a 20 cm); em lavoura formada o manual manda calcular pela superfície
+   * de aplicação (faixa ou área toda), pela profundidade (cerca de 7 cm) e pelo PRNT. Faixa em lavoura nova ou larga,
+   * área toda em lavoura adensada.
+   */
+  function aplicarPadroesManejo() {
+    if (estado.manejoTocado) return;
+    const v = estado.variante;
+    if (estado.grupo === 'cafe' && v.fase !== 'plantio') {
+      estado.manejo.PF = '7';
+      estado.manejo.SC = v.sistema === 'adensado' ? '100' : '75';
+    } else {
+      estado.manejo.PF = '20';
+      estado.manejo.SC = '100';
+    }
+  }
 
   const idCultura = () => (estado.grupo === 'frutas' ? estado.fruta : estado.grupo);
 
@@ -242,8 +260,32 @@
     const g = estado.grupo;
     if (!g) return '';
     if (g === 'cafe') {
-      const sis = C.cafe.sistemas;
+      const fase = v.fase;
       return `
+        <fieldset class="grupo-var">
+          <legend>Em que fase está o café?</legend>
+          <div class="chips chips-largos">
+            ${chip('fasecafe', 'plantio', fase === 'plantio', 'Plantio', 'lavoura nova: cova, pós-plantio, 1º e 2º ano')}
+            ${chip('fasecafe', 'producao', fase === 'producao', 'Produção', 'lavoura formada, em safra')}
+            ${chip('fasecafe', 'poda', fase === 'poda', 'Pós-poda ou recepa', 'lavoura podada, que vai voltar a produzir')}
+          </div>
+        </fieldset>
+        ${
+          fase === 'poda'
+            ? `<fieldset class="grupo-var">
+                 <legend>Que poda foi?</legend>
+                 <div class="chips chips-largos">
+                   ${chip('tipopoda', 'recepa', v.poda === 'recepa', 'Recepa ou esqueletamento', 'no 1º ano vale a adubação do 2º ano; do 2º ano em diante, a de produção')}
+                   ${chip('tipopoda', 'outra', v.poda === 'outra', 'Outro tipo de poda', 'as demais podas seguem a adubação de produção')}
+                 </div>
+               </fieldset>
+               ${
+                 v.poda === 'recepa'
+                   ? `<div class="marcas"><label class="marca-caixa"><input type="checkbox" id="v-vigorosa" ${v.vigorosa ? 'checked' : ''}><span>As brotações estão vigorosas (o manual dispensa a adubação do 1º ano)</span></label></div>`
+                   : ''
+               }`
+            : ''
+        }
         <fieldset class="grupo-var">
           <legend>Como é a lavoura?</legend>
           <div class="chips">
@@ -252,10 +294,14 @@
             ${chip('sistema', 'adensado', v.sistema === 'adensado', 'Adensado', '5.000 a 10.000 plantas/ha')}
           </div>
         </fieldset>
-        <div class="grade-campos">
-          ${campoSimples('v-sc', 'Produtividade esperada', 'sacas por hectare', v.sc, 'sc/ha', 'O manual usa de 20 a 30 sacas no tradicional, de 30 a 40 no semi-adensado e de 40 a 60 no adensado.')}
-          ${campoSimples('v-Nfoliar', 'Teor de N na folha', 'se tiver análise foliar', v.Nfoliar, 'dag/kg', 'Opcional. Com ele o N da safra é ajustado; sem ele usamos a dose preestabelecida.')}
-        </div>`;
+        ${
+          fase === 'plantio'
+            ? ''
+            : `<div class="grade-campos">
+                 ${campoSimples('v-sc', 'Produtividade esperada', 'sacas por hectare', v.sc, 'sc/ha', 'O manual usa de 20 a 30 sacas no tradicional, de 30 a 40 no semi-adensado e de 40 a 60 no adensado.')}
+                 ${campoSimples('v-Nfoliar', 'Teor de N na folha', 'se tiver análise foliar', v.Nfoliar, 'dag/kg', 'Opcional. Com ele o N da safra é ajustado; sem ele usamos a dose preestabelecida.')}
+               </div>`
+        }`;
     }
     if (g === 'milho') {
       return `
@@ -414,6 +460,7 @@
             <select id="m-PF">
               <option value="20" ${cal.PF === '20' ? 'selected' : ''}>0 a 20 cm (arado e grade)</option>
               <option value="10" ${cal.PF === '10' ? 'selected' : ''}>Até 10 cm (pomar formado)</option>
+              <option value="7" ${cal.PF === '7' ? 'selected' : ''}>Até 7 cm (café formado)</option>
               <option value="5" ${cal.PF === '5' ? 'selected' : ''}>Até 5 cm (espalhado)</option>
             </select>
           </div>
@@ -521,6 +568,8 @@
   }
 
   // ------------------------------------------------------------- passo 3: plantio
+  const faseCafe = () => (estado.grupo === 'cafe' ? estado.variante.fase : null);
+
   function passo3HTML() {
     const id = idCultura();
     const cult = C[id];
@@ -530,12 +579,19 @@
     const eP = estado.espacamento.entrePlantas || '';
     const padL = sis ? sis.entreLinhas : cult.entreLinhas;
     const padP = sis ? sis.entrePlantas : cult.entrePlantas;
+    const fc = faseCafe();
+    if (fc === 'producao' && !estado.plantio) estado.plantio = K.proximoOutubro15(hojeISO());
+    const T3 = {
+      plantio: { titulo: 'Quando você planta?', rotulo: 'Data de plantio', dica: perene ? 'Escolha a data de plantio. Se a lavoura já está plantada, ponha a data em que foi plantada: o guia calcula a idade e mostra as próximas adubações.' : 'Escolha o dia em que vai plantar. Se já plantou, ponha a data do plantio: o guia mostra o que ainda dá tempo de fazer.' },
+      producao: { titulo: 'Quando começa a adubação da safra?', rotulo: 'Data da primeira adubação', dica: 'O manual manda adubar de outubro a março, em 3 a 4 parcelas. Ponha a data da primeira aplicação (em geral, meados de outubro). O guia monta as parcelas, a amostra do solo e a calagem a partir dela.' },
+      poda: { titulo: 'Quando foi a poda?', rotulo: 'Data da poda ou recepa', dica: 'Ponha a data da poda, que pode ser futura. A adubação começa no primeiro outubro depois dela.' }
+    }[fc || 'plantio'];
     return `
-      <h2 class="passo-titulo" id="t-passo3">Quando você planta?</h2>
-      <p class="passo-dica texto">${perene ? 'Escolha a data de plantio. Se a lavoura já está plantada, ponha a data em que foi plantada: o guia calcula a idade e mostra as próximas adubações.' : 'Escolha o dia em que vai plantar. Se já plantou, ponha a data do plantio: o guia mostra o que ainda dá tempo de fazer.'}</p>
+      <h2 class="passo-titulo" id="t-passo3">${T3.titulo}</h2>
+      <p class="passo-dica texto">${T3.dica}</p>
       <div class="grade-campos">
         <div class="campo">
-          <label for="d-plantio"><span class="campo-nome">Data de plantio</span></label>
+          <label for="d-plantio"><span class="campo-nome">${T3.rotulo}</span></label>
           <div class="entrada"><input id="d-plantio" type="date" value="${esc(estado.plantio)}" min="1990-01-01" max="2100-12-31"></div>
           <p class="campo-dica" id="d-dica"></p>
         </div>
@@ -564,6 +620,12 @@
       return;
     }
     const d = K.diasEntre(hojeISO(), v);
+    const fc = faseCafe();
+    if (fc === 'producao' || fc === 'poda') {
+      const o = fc === 'poda' ? 'a poda' : 'a primeira adubação';
+      el.textContent = d > 0 ? `Faltam ${d} ${d === 1 ? 'dia' : 'dias'} para ${o}.` : d === 0 ? `${o[0].toUpperCase() + o.slice(1)} é hoje.` : `${o[0].toUpperCase() + o.slice(1)} foi há ${-d} ${-d === 1 ? 'dia' : 'dias'}.`;
+      return;
+    }
     if (d > 0) el.textContent = `Faltam ${d} ${d === 1 ? 'dia' : 'dias'} para o plantio.`;
     else if (d === 0) el.textContent = 'O plantio é hoje.';
     else {
@@ -621,6 +683,9 @@
     return {
       cultura: idCultura(),
       variante: {
+        fase: v.fase,
+        poda: v.poda,
+        vigorosa: !!v.vigorosa,
         sistema: v.sistema,
         sc: lerNumero(v.sc),
         Nfoliar: lerNumero(v.Nfoliar),
@@ -668,7 +733,7 @@
   function verReceita() {
     const erros3 = $('#erros3');
     if (!estado.plantio) {
-      mostrarErros(erros3, [{ texto: 'Escolha a data de plantio.' }]);
+      mostrarErros(erros3, [{ texto: faseCafe() === 'producao' ? 'Escolha a data da primeira adubação.' : faseCafe() === 'poda' ? 'Escolha a data da poda.' : 'Escolha a data de plantio.' }]);
       $('#d-plantio').focus();
       return;
     }
@@ -738,6 +803,11 @@
       corpo = `
         <p>${porque} São <strong>${fmt(c.QC, 2)} t/ha</strong> de calcário com PRNT ${fmt(c.usar.PRNT)}%, ${c.usar.SC < 100 ? 'só na faixa das plantas' : 'na área toda'}, entrando ${c.usar.PF >= 20 ? 'de 0 a 20 cm' : 'até ' + c.usar.PF + ' cm'}.${c.dolomitico ? (c.dolomiticoObrigatorio ? ' O manual manda usar calcário dolomítico nesta cultura.' : ' O magnésio do seu solo está baixo: prefira calcário dolomítico.') : ''}</p>
         <p class="nota">Para ${esc(cult.nome.toLowerCase())}, o manual aceita até ${par.mt}% do alumínio na CTC e pede ${fmt(par.X)} cmolc/dm³ de cálcio mais magnésio, ou saturação por bases de ${par.Ve}%. Conferindo pela saturação por bases${c.bases.aplicavel ? '' : ' (que no café só vale com V abaixo de 50%)'}, a dose seria ${fmt(c.bases.QC, 2)} t/ha.</p>
+        ${
+          c.complementarCova
+            ? `<p>Na cova: se você já incorporou o calcário na área toda, ponha só <strong>${fmt(c.complementarCova.gCova, 0)} g</strong> por cova de 40 x 40 x 40 cm (ou ${fmt(c.complementarCova.gMetroSulco, 0)} g por metro de sulco). É a regra do manual: a necessidade de calagem vezes o volume da cova, dividido por 2.</p>`
+            : ''
+        }
         ${c.alertas.map((al) => `<p class="alerta"><span class="carimbo carimbo-alerta">Atenção</span> ${esc(al.texto)}</p>`).join('')}`;
     } else {
       corpo = `<p>O seu solo não precisa de calcário para ${esc(cult.nome.toLowerCase())}: o alumínio está dentro do que a lavoura tolera e o cálcio mais o magnésio já chegam ao que ela pede.</p>`;
@@ -817,13 +887,19 @@
     const par = (v, un) => (v > 0 ? [fmt(v), un] : null);
     if (ad.tipo === 'cafe') {
       const pr = ad.producao;
-      return [
-        { id: 'cova', rot: 'Cova de plantio', un: 'g/cova', N: '', P: fmt(ad.cova.P2O5_g_cova), K: '', obs: `Fósforo em classe ${ad.cova.classeP.rotulo}.`, rP: par(ad.cova.P2O5_g_cova, 'g/cova') },
-        { id: 'pos', rot: 'Depois do plantio', un: 'g/cova', N: '3 a 5 por vez', P: '', K: fmt(ad.posPlantio.K2O_g_cova_ano) + ' por ano', obs: 'Primeira cobertura depois do pegamento, de 30 a 45 dias uma da outra, até o fim das chuvas.', rN: ['3 a 5', 'g/cova por vez'], rK: par(ad.posPlantio.K2O_g_cova_ano, 'g/cova por ano') },
-        { id: 'ano1', rot: '1º ano', un: 'g/cova', N: fmt(ad.ano1.N_g_cova_aplicacao) + ' por vez', P: '', K: fmt(ad.ano1.K2O_g_cova_ano) + ' por ano', obs: 'De 3 a 4 aplicações de outubro a março.', rN: par(ad.ano1.N_g_cova_aplicacao, 'g/cova por vez'), rK: par(ad.ano1.K2O_g_cova_ano, 'g/cova por ano') },
-        { id: 'ano2', rot: '2º ano', un: 'g/cova', N: fmt(ad.ano2.N_g_cova_aplicacao) + ' por vez', P: '', K: fmt(ad.ano2.K2O_g_cova_ano) + ' por ano', obs: 'De 3 a 4 aplicações de outubro a março.', rN: par(ad.ano2.N_g_cova_aplicacao, 'g/cova por vez'), rK: par(ad.ano2.K2O_g_cova_ano, 'g/cova por ano') },
-        { id: 'prod', rot: 'Lavoura em produção', un: 'kg/ha por ano', N: fmt(pr.N), P: fmt(pr.P2O5), K: fmt(pr.K2O), obs: `Safra de ${pr.faixaSc} sacas/ha. N: ${pr.notaN}. Fósforo em classe ${pr.classeP.rotulo}, potássio em classe ${pr.classeK.rotulo}. Enxofre: ${fmt(pr.S)} kg/ha se as fontes não o trouxerem.`, rN: par(pr.N, 'kg/ha por ano'), rP: par(pr.P2O5, 'kg/ha por ano'), rK: par(pr.K2O, 'kg/ha por ano') }
-      ];
+      const cova = { id: 'cova', rot: 'Cova de plantio', un: 'g/cova', N: '', P: fmt(ad.cova.P2O5_g_cova), K: '', obs: `Fósforo em classe ${ad.cova.classeP.rotulo}.`, rP: par(ad.cova.P2O5_g_cova, 'g/cova') };
+      const pos = { id: 'pos', rot: 'Depois do plantio', un: 'g/cova', N: '3 a 5 por vez', P: '', K: fmt(ad.posPlantio.K2O_g_cova_ano) + ' por ano', obs: 'Primeira cobertura depois do pegamento, de 30 a 45 dias uma da outra, até o fim das chuvas.', rN: ['3 a 5', 'g/cova por vez'], rK: par(ad.posPlantio.K2O_g_cova_ano, 'g/cova por ano') };
+      const ano1 = { id: 'ano1', rot: '1º ano', un: 'g/cova', N: fmt(ad.ano1.N_g_cova_aplicacao) + ' por vez', P: '', K: fmt(ad.ano1.K2O_g_cova_ano) + ' por ano', obs: 'De 3 a 4 aplicações de outubro a março.', rN: par(ad.ano1.N_g_cova_aplicacao, 'g/cova por vez'), rK: par(ad.ano1.K2O_g_cova_ano, 'g/cova por ano') };
+      const ano2 = { id: 'ano2', rot: '2º ano', un: 'g/cova', N: fmt(ad.ano2.N_g_cova_aplicacao) + ' por vez', P: '', K: fmt(ad.ano2.K2O_g_cova_ano) + ' por ano', obs: 'De 3 a 4 aplicações de outubro a março.', rN: par(ad.ano2.N_g_cova_aplicacao, 'g/cova por vez'), rK: par(ad.ano2.K2O_g_cova_ano, 'g/cova por ano') };
+      const prod = { id: 'prod', rot: ad.posPoda ? 'A partir do 2º ano depois da poda' : 'Lavoura em produção', un: 'kg/ha por ano', N: fmt(pr.N), P: fmt(pr.P2O5), K: fmt(pr.K2O), obs: `Safra de ${pr.faixaSc} sacas/ha. N: ${pr.notaN}. Fósforo em classe ${pr.classeP.rotulo}, potássio em classe ${pr.classeK.rotulo}. Enxofre: ${fmt(pr.S)} kg/ha se as fontes não o trouxerem.`, rN: par(pr.N, 'kg/ha por ano'), rP: par(pr.P2O5, 'kg/ha por ano'), rK: par(pr.K2O, 'kg/ha por ano') };
+      if (ad.fase === 'plantio') return [cova, pos, ano1, ano2];
+      if (ad.fase === 'producao') return [prod];
+      if (!ad.posPoda) return [prod];
+      const pp = ad.posPoda;
+      const poda1 = pp.dispensada
+        ? { id: 'ano-poda', rot: '1º ano depois da poda', un: 'g/cova', N: '', P: '', K: '', obs: 'Brotações vigorosas: o manual dispensa a adubação deste ano.' }
+        : { id: 'ano-poda', rot: '1º ano depois da poda', un: 'g/cova', N: fmt(pp.N_g_cova_aplicacao) + ' por vez', P: '', K: fmt(pp.K2O_g_cova_ano) + ' por ano', obs: 'Vale a adubação do 2º ano: de 3 a 4 aplicações de outubro a março.', rN: par(pp.N_g_cova_aplicacao, 'g/cova por vez'), rK: par(pp.K2O_g_cova_ano, 'g/cova por ano') };
+      return [poda1, prod];
     }
     return ad.fases.map((f) => ({
       id: f.id,
@@ -843,7 +919,7 @@
     const r = cal.fase ? cal.fase.rotulo : '';
     const ad = plano.adubacao;
     if (ad.tipo === 'cafe') {
-      return { 'Antes do plantio': 'cova', 'Depois do plantio': 'pos', '1º ano': 'ano1', '2º ano': 'ano2', 'Lavoura em produção': 'prod' }[r] || 'cova';
+      return { 'Antes do plantio': 'cova', 'Depois do plantio': 'pos', '1º ano': 'ano1', '2º ano': 'ano2', 'Depois do 2º ano': 'ano2', 'Lavoura em produção': 'prod', 'Poda: 1º ano': 'ano-poda' }[r] || 'cova';
     }
     if (r === 'Antes do plantio') return ad.fases[0].id;
     const f = ad.fases.find((x) => x.titulo === r);
@@ -888,8 +964,8 @@
     }
     return `
       <div class="receita-linha">
-        <h3 class="receita-nome">Adubação: todas as fases do manual para o seu solo</h3>
-        <p class="nota">Os números grandes do rótulo são da fase em que você está. Os anos seguintes vêm do mesmo manual.</p>
+        <h3 class="receita-nome">${linhas.length > 1 ? 'Adubação: todas as fases do manual para o seu solo' : 'Adubação: como o guia chegou nela'}</h3>
+        ${linhas.length > 1 ? '<p class="nota">Os números grandes do rótulo são da fase em que você está. Os anos seguintes vêm do mesmo manual.</p>' : ''}
         ${tabela}
         ${extra.map((t) => `<p class="nota">${quim(t)}</p>`).join('')}
         ${fonteHTML({ sec: plano.cultura.sec, pag: plano.cultura.pag, obra: plano.cultura.obra })}
@@ -932,8 +1008,8 @@
     return `
       <div class="rotulo">
         <div class="rotulo-topo">
-          <h2 class="rotulo-titulo" id="t-receita">Receita para ${esc(plano.cultura.nome.toLowerCase())}</h2>
-          <span class="carimbo carimbo-lote">Plantio ${esc(fmtDataCurta(estado.plantio))}</span>
+          <h2 class="rotulo-titulo" id="t-receita">Receita para ${esc(plano.cultura.nome.toLowerCase())}${nomeFaseCafe(plano)}</h2>
+          <span class="carimbo carimbo-lote">${nomeDataReferencia(plano)} ${esc(fmtDataCurta(estado.plantio))}</span>
         </div>
         <div class="rotulo-corpo">
           <div class="rotulo-adubos">
@@ -946,6 +1022,17 @@
         </div>
       </div>`;
   }
+
+  const nomeFaseCafe = (plano) => {
+    const ad = plano.adubacao;
+    if (ad.tipo !== 'cafe') return '';
+    return { plantio: ' em plantio', producao: ' em produção', poda: ad.poda.tipo === 'recepa' ? ' depois da recepa' : ' depois da poda' }[ad.fase] || '';
+  };
+  const nomeDataReferencia = (plano) => {
+    const ad = plano.adubacao;
+    if (ad.tipo !== 'cafe') return 'Plantio';
+    return { plantio: 'Plantio', producao: '1ª adubação', poda: 'Poda' }[ad.fase] || 'Plantio';
+  };
 
   function receitaHTML(plano, cal) {
     const notas = notasDeClasse(plano.adubacao);
@@ -1043,7 +1130,7 @@
             <button type="button" data-acao="filtro" data-valor="tudo" aria-pressed="${estado.filtro === 'tudo'}">Tudo (3 anos)</button>
           </div>` : ''}
         </div>
-        <p class="bloco-dica texto">Cada parada vem da data de plantio ${esc(fmtDataCurta(estado.plantio))}. Onde está escrito <strong>data estimada</strong>, o manual dá só o momento (por exemplo, a planta com 6 a 8 folhas) ou o prazo em meses, e o dia saiu de uma conta nossa.</p>
+        <p class="bloco-dica texto">Cada parada vem da ${esc(nomeDataReferencia(plano).toLowerCase() === 'plantio' ? 'data de plantio' : nomeDataReferencia(plano).toLowerCase() === 'poda' ? 'data da poda' : 'data da primeira adubação')} ${esc(fmtDataCurta(estado.plantio))}. Onde está escrito <strong>data estimada</strong>, o manual dá só o momento (por exemplo, a planta com 6 a 8 folhas) ou o prazo em meses, e o dia saiu de uma conta nossa.</p>
         ${marcosFiltrados(cal).some((m) => m.estado === 'atrasado') ? '<p class="alerta alerta-lista"><span class="carimbo carimbo-alerta">Atrasada</span> As etapas com este carimbo já passaram do prazo que o manual indica. Se ainda não foram feitas, faça o quanto antes.</p>' : ''}
         <ol class="marcos" id="marcos">${marcosHTML(cal)}</ol>
       </section>`;
@@ -1253,13 +1340,28 @@
     if (t.name === 'grupo') {
       estado.grupo = t.value;
       if (estado.grupo === 'cafe' && !estado.scTocado) estado.variante.sc = { tradicional: '25', semiadensado: '35', adensado: '50' }[estado.variante.sistema];
+      aplicarPadroesManejo();
       $('#variante').innerHTML = varianteHTML();
       $('#continuar-1').disabled = false;
       $('#dica-continuar').hidden = true;
       guardar();
       atualizarCinto();
+    } else if (t.name === 'fasecafe') {
+      estado.variante.fase = t.value;
+      estado.plantio = '';
+      aplicarPadroesManejo();
+      $('#variante').innerHTML = varianteHTML();
+      guardar();
+    } else if (t.name === 'tipopoda') {
+      estado.variante.poda = t.value;
+      $('#variante').innerHTML = varianteHTML();
+      guardar();
+    } else if (t.id === 'v-vigorosa') {
+      estado.variante.vigorosa = t.checked;
+      guardar();
     } else if (t.name === 'sistema') {
       estado.variante.sistema = t.value;
+      aplicarPadroesManejo();
       if (!estado.scTocado) {
         estado.variante.sc = { tradicional: '25', semiadensado: '35', adensado: '50' }[t.value];
         const campo = $('#v-sc');
@@ -1291,9 +1393,11 @@
       guardar();
     } else if (t.id === 'm-SC') {
       estado.manejo.SC = t.value;
+      estado.manejoTocado = true;
       guardar();
     } else if (t.id === 'm-PF') {
       estado.manejo.PF = t.value;
+      estado.manejoTocado = true;
       guardar();
     } else if (t.dataset && t.dataset.fonte) {
       estado.fontes[t.dataset.fonte] = t.value;

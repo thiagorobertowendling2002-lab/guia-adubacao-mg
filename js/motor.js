@@ -224,6 +224,18 @@
   /** QC = NC x (SC/100) x (PF/20) x (100/PRNT), em t/ha (seção 8.3, p. 53). */
   const quantidadeCalcario = (NC, o) => NC * (o.SC / 100) * (o.PF / 20) * (100 / o.PRNT);
 
+  /**
+   * Calcário complementar na cova ou no sulco de plantio do café (seção 18.4.6, "Adubação de plantio").
+   * Onde o calcário já foi incorporado na área (0 a 20 cm), a dose na cova cai à metade:
+   * g/cova = NC (t/ha) x volume de solo da cova (dm3) / 2. Exemplo do manual: 3 t/ha, cova de 40 x 40 x 40 cm
+   * (64 dm3) dá 192 / 2 = 96 g, "100 g/cova"; para um metro de sulco multiplica por 2,5.
+   */
+  const calcarioComplementarCova = (NC, volumeDm3) => {
+    const v = volumeDm3 || 64;
+    const gCova = (NC * v) / 2;
+    return { gCova, gMetroSulco: gCova * 2.5, volumeDm3: v };
+  };
+
   /** PRNT = PN x RE / 100 (seção 8.4, p. 54). */
   const prnt = (pn, re) => (pn * re) / 100;
 
@@ -250,12 +262,6 @@
       alertas.push({
         tipo: 'dose-alta',
         texto: `A dose passa de ${par.tetoPorAplicacao} t/ha, o máximo que o manual aceita por aplicação. Divida em duas aplicações, com a segunda depois de uns 6 meses, ou até um ano, e analise o solo de novo.`
-      });
-    }
-    if (o.PF < 20 && NC > 0) {
-      alertas.push({
-        tipo: 'profundidade',
-        texto: `Com incorporação a ${o.PF} cm a dose é calculada só para essa camada. Isso é o certo para o calcário espalhado sem arar, mas passar da dose por pouca profundidade é supercalagem (seção 8.6).`
       });
     }
     return {
@@ -389,9 +395,17 @@
     return { fases, aposPoda: cult.aposPoda ? fase(Object.assign({ id: 'poda' }, cult.aposPoda)) : null };
   }
 
-  /** Café: implantação, 1º e 2º ano, e lavoura em produção (seção 18.4.6, p. 289). */
+  /**
+   * Café em três fases (seção 18.4.6, p. 289):
+   *  - plantio: cova, pós-plantio, 1º e 2º ano;
+   *  - producao: lavoura formada em safra (Quadros 18.4.6.4 e 18.4.6.5);
+   *  - poda: "Adubação de cafeeiros podados". Recepa e esqueletamento: no 1º ano depois da poda vale a adubação do 2º ano
+   *    (dispensada se as brotações forem vigorosas) e do 2º ano em diante a de produção. Demais podas: a de produção.
+   */
   function adubacaoCafe(a, ent) {
     const cafe = C.cafe;
+    const fase = ['plantio', 'producao', 'poda'].includes(ent.fase) ? ent.fase : 'plantio';
+    const poda = { tipo: ent.poda === 'outra' ? 'outra' : 'recepa', vigorosa: !!ent.vigorosa };
     const cP = classeP(a, 'cafePlantio');
     const cK = classeK(a.K, 'cafe');
     const cPm = classeP(a, 'cafeManutencao');
@@ -420,10 +434,17 @@
     }
 
     return {
+      fase,
+      poda,
       cova: { P2O5_g_cova: cafe.plantio.P_g_cova[cP.indice], classeP: cP },
       posPlantio: { N_g_cova_aplicacao: cafe.posPlantio.N_g_cova_aplicacao, K2O_g_cova_ano: cafe.posPlantio.K_g_cova_ano[cK.indice], classeK: cK },
       ano1: { N_g_cova_aplicacao: cafe.formacao[1].N_g_cova_aplicacao, K2O_g_cova_ano: cafe.formacao[1].K_g_cova_ano[cK.indice] },
       ano2: { N_g_cova_aplicacao: cafe.formacao[2].N_g_cova_aplicacao, K2O_g_cova_ano: cafe.formacao[2].K_g_cova_ano[cK.indice] },
+      // 1º ano depois da recepa ou do esqueletamento = adubação do 2º ano; dispensada com brotação vigorosa.
+      posPoda:
+        fase === 'poda' && poda.tipo === 'recepa'
+          ? { N_g_cova_aplicacao: cafe.formacao[2].N_g_cova_aplicacao, K2O_g_cova_ano: cafe.formacao[2].K_g_cova_ano[cK.indice], dispensada: poda.vigorosa, classeK: cK }
+          : null,
       producao: {
         sc,
         faixaSc: faixasRotulo,
@@ -559,6 +580,10 @@
       adubacao = Object.assign({ tipo: 'fruta' }, adubacaoFases(cult, a));
     }
 
+    if (adubacao.tipo === 'cafe' && adubacao.fase === 'plantio' && cal.precisa) {
+      cal.complementarCova = calcarioComplementarCova(cal.NC, 64);
+    }
+
     const avisos = val.avisos.slice();
 
     return {
@@ -589,6 +614,7 @@
     validar,
     calagem,
     quantidadeCalcario,
+    calcarioComplementarCova,
     prnt,
     gesso,
     ngArgila,

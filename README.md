@@ -30,6 +30,14 @@ O que está implementado do manual:
 - **Doses por cultura** (seções 18.2, 18.4.6, 18.4.8 e 18.4.13), com as tabelas por fase, por estádio ou por faixa de produtividade.
 - **Estratégias de manejo** de cada cultura, em cartões curtos que citam a seção.
 
+## O café em três fases
+
+Ao escolher o café, o guia pergunta em que fase a lavoura está, e cada fase tem o seu cálculo, o seu calendário e os seus cartões de manejo, todos da seção 18.4.6 do manual:
+
+- **Plantio**: cova (fósforo pela classe do solo, Quadro 18.4.6.1), calcário na área e calcário complementar na cova (a conta do manual: NC x volume da cova / 2), coberturas do pegamento e do 1º e 2º ano (Quadros 18.4.6.2 e 18.4.6.3). Depois do 2º ano o guia manda escolher a fase Produção.
+- **Produção**: N e K por faixa de produtividade (Quadro 18.4.6.4), P pela classe de manutenção (18.4.6.5), enxofre (1/8 do N), micronutrientes (18.4.6.7), 3 a 5 parcelas de outubro a março, análise foliar em dezembro e amostra anual do solo sob a copa. A data informada é a da primeira adubação.
+- **Pós-poda ou recepa**: na recepa e no esqueletamento, o 1º ano depois da poda segue a adubação do 2º ano (dispensada se as brotações forem vigorosas) e do 2º ano em diante vale a de produção; nas demais podas vale a de produção desde o início. Zinco nas folhas das brotações novas. A data informada é a da poda; as adubações começam no primeiro 15 de outubro depois dela (estimativa).
+
 ## A pitaya vem de outra fonte
 
 O manual de 1999 não fala de pitaya. As doses, o calendário e o manejo dela vêm da *Cultivo da Pitaya* (Emater-MG, Belo Horizonte, 2023). A cartilha dá a adubação em gramas de NPK 20-00-20 por planta e diz que é baseada em experiência de cultivo, com pouca pesquisa. O guia converte para nutriente (200 g = 40 g de N e 40 g de K₂O). A cartilha **não traz método de calagem nem de gesso**, então para a pitaya o guia não calcula calcário nem gesso: mostra a faixa de pH da cartilha (5,5 a 6,5) e os 300 g de calcário por cova. Nas telas e nas citações a pitaya aparece com a fonte dela.
