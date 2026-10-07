@@ -12,7 +12,7 @@ Lavouras: café, milho (grão e silagem), feijão (níveis de tecnologia 1 a 4) 
 2. **O laudo.** Digite os números do laudo de solo de 0 a 20 cm. Conforme você digita, o guia mostra como o manual classifica cada número. O laudo do subsolo (20 a 40 cm) é opcional e serve para a gessagem.
 3. **O plantio.** Escolha a data. Pode ser futura (plantio novo) ou passada (lavoura já plantada: o guia calcula a idade e mostra as próximas adubações).
 
-O resultado traz: a receita (calcário, gesso, N, P₂O₅ e K₂O), o modo de usar com as datas, os cartões de manejo, a conversão para adubo comercial (ureia, sulfato de amônio, nitrato de amônio, superfosfatos, MAP e cloreto de potássio, em kg/ha, g por metro de sulco e g por planta) e a leitura do laudo.
+O resultado traz: a receita (calcário, gesso, N, P₂O₅ e K₂O), o modo de usar com as datas, os cartões de manejo, a conversão para adubo comercial (ureia, sulfato de amônio, nitrato de amônio, superfosfatos, MAP e cloreto de potássio, em kg/ha, g por metro de sulco e g por planta) e a leitura do laudo. Na conversão dá para trocar os adubos simples por **adubo formulado NPK**: o guia acha a fórmula de relação mais próxima para cada parada e diz quanto pesar.
 
 ## De onde vêm os números
 
@@ -41,6 +41,12 @@ Ao escolher o café, o guia pergunta em que fase a lavoura está, e cada fase te
 ## A pitaya vem de outra fonte
 
 O manual de 1999 não fala de pitaya. As doses, o calendário e o manejo dela vêm da *Cultivo da Pitaya* (Emater-MG, Belo Horizonte, 2023). A cartilha dá a adubação em gramas de NPK 20-00-20 por planta e diz que é baseada em experiência de cultivo, com pouca pesquisa. O guia converte para nutriente (200 g = 40 g de N e 40 g de K₂O). A cartilha **não traz método de calagem nem de gesso**, então para a pitaya o guia não calcula calcário nem gesso: mostra a faixa de pH da cartilha (5,5 a 6,5) e os 300 g de calcário por cova. Nas telas e nas citações a pitaya aparece com a fonte dela.
+
+## Adubo formulado NPK
+
+O método é o do capítulo 6 do manual (p. 33 a 35): dividir as doses pela menor para achar a relação (20-80-40 dá 1:4:2), procurar a fórmula com a mesma relação (4-16-8) e dividir a dose pelo teor (500 kg/ha). A lista de fórmulas junta as que o capítulo cita (4-16-8, 10-10-20, 10-30-20, 17-17-17, 24-8-12, 27-3-21), as do capítulo 9 de VELOSO, BOTELHO e RODRIGUES (Embrapa, 2020: 10-10-10, 20-5-20, 4-20-20, 18-18-18, 10-28-20, 10-20-5) e a 20-00-20 da cartilha da pitaya. Para acrescentar uma fórmula, é uma linha em `js/produtos.js`.
+
+Quando nenhuma fórmula tem a relação exata, o guia usa a que deixa menos nutriente faltando, aceita que um nutriente passe da dose em **até 10%** para a fórmula fechar sozinha, e completa o que ainda faltar com adubo simples. Essas duas escolhas são do guia, não do manual, e a tela avisa quando foram usadas. Parada com um nutriente só (cobertura de nitrogênio, por exemplo) fica no adubo simples.
 
 ## Escolhas e estimativas (leia antes de confiar numa data)
 
@@ -71,7 +77,7 @@ npx serve .
 node --test "tests/*.test.cjs"
 ```
 
-Os testes reproduzem os exemplos resolvidos do próprio manual (calagem do café por argila, por P-rem e por saturação por bases; gesso por argila e por P-rem; quantidade de calcário; PRNT; conversão de K e a mistura 20-80-40 do capítulo 6) e conferem, para cada fruta, que as linhas de cada tabela somam o "Total" impresso. Há também cenários de calendário (plantio futuro e passado, lavoura com anos de idade, prazo de calagem vencido, virada de ano).
+Os testes reproduzem os exemplos resolvidos do próprio manual (calagem do café por argila, por P-rem e por saturação por bases; gesso por argila e por P-rem; quantidade de calcário; PRNT; conversão de K, a mistura 20-80-40 do capítulo 6 e a mesma dose em 4-16-8) e conferem, para cada fruta, que as linhas de cada tabela somam o "Total" impresso. Há também cenários de calendário (plantio futuro e passado, lavoura com anos de idade, prazo de calagem vencido, virada de ano).
 
 ## Estrutura
 

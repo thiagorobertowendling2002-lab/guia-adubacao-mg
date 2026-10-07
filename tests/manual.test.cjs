@@ -348,3 +348,87 @@ test('pitaya: NPK 20-00-20 da cartilha vira nutriente (200 g = 40 g de N e 40 g 
   assert.equal(producao.total.N, 150 * 0.2);
   assert.equal(producao.total.K, 150 * 0.2);
 });
+
+// ------------------------------------------------------------- adubo formulado (Cap. 6, p. 33 a 35)
+const ESCOLHA = { N: 'ureia', P: 'sup-simples', K: 'kcl' };
+
+test('Cap. 6: 20-80-40 tem relação 1:4:2 e pede 500 kg/ha de 4-16-8, sem completar', () => {
+  assert.deepEqual(P.relacao({ N: 20, P2O5: 80, K2O: 40 }), [1, 4, 2]);
+  const r = P.formulado({ N: 20, P2O5: 80, K2O: 40 }, ESCOLHA);
+  assert.equal(r.formula.id, 'npk-04-16-08');
+  perto(r.kg, 500, 0.001);
+  assert.equal(r.complemento.itens.length, 0);
+  perto(r.totalKg, 500, 0.001);
+});
+
+test('Cap. 6: 500 kg/ha em sulcos a 0,8 m dá 40 g por metro e, com 5 covas por metro, 8 g por cova', () => {
+  perto(P.gramasPorMetro(500, 0.8), 40, 0.001);
+  perto(P.gramasPorPlanta(500, P.metrosDeSulcoPorHa(0.8) * 5), 8, 0.001);
+});
+
+test('Embrapa (2020, cap. 9): 80-160-40 tem relação 2:4:1 e pede 800 kg/ha de 10-20-5', () => {
+  assert.deepEqual(P.relacao({ N: 80, P2O5: 160, K2O: 40 }), [2, 4, 1]);
+  const r = P.formulado({ N: 80, P2O5: 160, K2O: 40 }, ESCOLHA);
+  assert.equal(r.formula.id, 'npk-10-20-05');
+  perto(r.kg, 800, 0.001);
+  assert.equal(r.complemento.itens.length, 0);
+});
+
+test('formulado: dose de um nutriente só não tem fórmula e cai no adubo simples', () => {
+  const r = P.formulado({ N: 60, P2O5: 0, K2O: 0 }, ESCOLHA);
+  assert.equal(r.formula, null);
+  assert.deepEqual(r.nutrientes, ['N']);
+  perto(r.complemento.itens[0].kg, 60 / 0.44, 0.001);
+});
+
+test('formulado: nunca escolhe fórmula com nutriente que a dose não pede', () => {
+  const semK = P.formulado({ N: 20, P2O5: 80, K2O: 0 }, ESCOLHA);
+  assert.ok(!semK.formula || semK.formula.K2O === 0);
+  const semP = P.formulado({ N: 70, P2O5: 0, K2O: 40 }, ESCOLHA);
+  assert.equal(semP.formula.id, 'npk-20-00-20');
+  perto(semP.kg, 200, 0.001);
+  perto(semP.complemento.itens[0].kg, 30 / 0.44, 0.001);
+});
+
+test('formulado: aceita até 10% a mais de um nutriente para a fórmula fechar sozinha', () => {
+  // 4-16-8 fecha N em 475 kg e P e K em 500 kg: vai a 500 e o N passa 1 kg (5,3%)
+  const r = P.formulado({ N: 19, P2O5: 80, K2O: 40 }, ESCOLHA);
+  assert.equal(r.formula.id, 'npk-04-16-08');
+  perto(r.kg, 500, 0.001);
+  perto(r.excesso.N, 1, 0.001);
+  assert.equal(r.complemento.itens.length, 0);
+  // acima da tolerância não estica: 15-80-40 pediria 33% a mais de N
+  const s = P.formulado({ N: 15, P2O5: 80, K2O: 40 }, ESCOLHA);
+  for (const n of ['N', 'P2O5', 'K2O']) assert.ok(s.excesso[n] <= { N: 15, P2O5: 80, K2O: 40 }[n] * P.TOLERANCIA + 1e-6, n);
+});
+
+test('formulado: fórmula mais complemento entregam a dose, com excesso de no máximo 10% por nutriente', () => {
+  const doses = [
+    [20, 80, 40], [30, 90, 60], [10, 120, 30], [140, 0, 80], [4, 0, 15], [40, 20, 40], [25, 70, 0], [100, 30, 100], [7, 33, 12]
+  ];
+  for (const [N, P2O5, K2O] of doses) {
+    for (const fP of ['sup-simples', 'map']) {
+      const r = P.formulado({ N, P2O5, K2O }, { N: 'ureia', P: fP, K: 'kcl' });
+      const dado = { N: 0, P2O5: 0, K2O: 0 };
+      if (r.formula) for (const n of Object.keys(dado)) dado[n] += (r.kg * r.formula[n]) / 100;
+      for (const it of r.complemento.itens) for (const n of Object.keys(dado)) dado[n] += (it.kg * (it.produto[n] || 0)) / 100;
+      const dentro = (n, pedido) => {
+        assert.ok(dado[n] >= pedido - 1e-6, `${N}-${P2O5}-${K2O} falta ${n}`);
+        assert.ok(dado[n] <= pedido * (1 + P.TOLERANCIA) + 1e-6, `${N}-${P2O5}-${K2O} sobra ${n}`);
+        perto(dado[n] - pedido, r.excesso[n], 1e-6, `${N}-${P2O5}-${K2O} excesso ${n}`);
+      };
+      dentro('P2O5', P2O5);
+      dentro('K2O', K2O);
+      // com MAP, o N que vem no fosfato pode passar do que falta; fora isso a dose de N fecha na tolerância
+      if (fP === 'map') assert.ok(dado.N >= N - 1e-6, `${N}-${P2O5}-${K2O} N`);
+      else dentro('N', N);
+    }
+  }
+});
+
+test('item 7.2.4: toda fórmula tem teores inteiros e soma de 24% ou mais', () => {
+  for (const f of P.FORMULAS) {
+    assert.ok([f.N, f.P2O5, f.K2O].every(Number.isInteger), f.nome);
+    assert.ok(f.N + f.P2O5 + f.K2O >= 24, f.nome);
+  }
+});
