@@ -1501,6 +1501,12 @@
       $('#variante').innerHTML = varianteHTML();
       atualizarCinto();
       mostrarPasso(1);
+    } else if (acao === 'inicio') {
+      // volta ao primeiro passo sem apagar o que já foi digitado
+      e.preventDefault();
+      $('#resultado').hidden = true;
+      mostrarPasso(1);
+      window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     } else if (acao === 'validar-laudo') validarLaudo();
     else if (acao === 'ver-receita') verReceita();
     else if (acao === 'editar') {

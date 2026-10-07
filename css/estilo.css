@@ -173,6 +173,14 @@ select {
   text-transform: uppercase;
   text-wrap: balance;
 }
+.marca-link {
+  color: inherit;
+  text-decoration: none;
+}
+.marca-link:focus-visible {
+  outline: 3px solid var(--amarelo);
+  outline-offset: 4px;
+}
 .marca-mg {
   display: inline-block;
   margin-left: 0.08em;
