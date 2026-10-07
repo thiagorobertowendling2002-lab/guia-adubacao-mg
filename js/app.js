@@ -1036,10 +1036,18 @@
   };
 
   function receitaHTML(plano, cal) {
-    const notas = notasDeClasse(plano.adubacao);
     return `
       <section class="bloco bloco-receita" aria-labelledby="t-receita">
         ${rotuloHTML(plano, cal)}
+      </section>`;
+  }
+
+  /** Avisos e o porquê de cada dose; vem depois do saco, que é o que o produtor procura primeiro. */
+  function explicacoesHTML(plano, cal) {
+    const notas = notasDeClasse(plano.adubacao);
+    return `
+      <section class="bloco bloco-explica" aria-labelledby="t-explica">
+        <div class="bloco-topo"><h2 class="bloco-titulo" id="t-explica">Como o guia chegou nisso</h2></div>
         ${avisosHTML(plano, cal)}
         <div class="receita-detalhe">
           ${explicaCalagem(plano)}
@@ -1198,9 +1206,7 @@
     /** Fórmula (quando há) seguida do adubo simples que completa a dose. */
     const itensFormulado = (r) => (r.formula ? [{ produto: r.formula, kg: r.kg }] : []).concat(r.complemento.itens.map((it) => Object.assign({ completa: !!r.formula }, it)));
     const NOME_NUTR = { N: 'nitrogênio', P2O5: 'fósforo', K2O: 'potássio' };
-    let usouComplemento = false;
     let usouFormula = false;
-    let usouExcesso = false;
     const linhas = lista.map((m) => {
       const dose = { N: m.dose.N, P2O5: m.dose.P2O5, K2O: m.dose.K2O };
       const porHa = m.dose.unidade === 'kg/ha';
@@ -1223,7 +1229,6 @@
       const visivel = (it) => it.kg >= (porHa ? 0.05 : 0.5);
       const principais = itens.filter((it) => !it.completa && visivel(it));
       const completam = itens.filter((it) => it.completa && visivel(it));
-      if (completam.length) usouComplemento = true;
       if (formulado && form.formula) usouFormula = true;
       let extra = '';
       let outras = '';
@@ -1232,7 +1237,6 @@
         const desvio = (campo, rotulo, palavra) => {
           const quais = Object.keys(NOME_NUTR).filter((n) => form[campo][n] >= (porHa ? 0.05 : 0.5));
           if (!quais.length) return;
-          usouExcesso = true;
           extra += `<p class="nota">${rotulo}: ${quais.map((n) => `${fmt(form[campo][n], porHa ? 1 : 0)} ${porHa ? 'kg/ha' : 'g'} de ${NOME_NUTR[n]} ${palavra} (${fmt((form[campo][n] / dose[n]) * 100, 0)}%)`).join(' e ')}.</p>`;
         };
         desvio('excesso', 'Passa um pouco da dose', 'a mais');
@@ -1258,7 +1262,7 @@
       .map((t) => `<li><span class="prod-nome">${esc(t.nome)}</span> <span class="prod-qtd">${fmt(t.kg, 0)} kg por hectare, cerca de ${Math.ceil(t.kg / 50)} ${Math.ceil(t.kg / 50) === 1 ? 'saco' : 'sacos'} de 50 kg</span></li>`)
       .join('');
     const obsFontes = [achar(P.FONTES.N, f.N), achar(P.FONTES.P, f.P), achar(P.FONTES.K, f.K)].map((x) => x.nota).filter(Boolean);
-    const rotFonte = (nome) => (formulado ? `Para completar o ${nome}` : `Fonte de ${nome}`);
+    const rotFonte = (nome) => (formulado ? nome.charAt(0).toUpperCase() + nome.slice(1) : `Fonte de ${nome}`);
     return `
       <section class="bloco bloco-saco" aria-labelledby="t-saco">
         <div class="bloco-topo"><h2 class="bloco-titulo" id="t-saco">Do nutriente ao saco</h2>
@@ -1267,32 +1271,35 @@
             <button type="button" data-acao="modo-saco" data-valor="formulado" aria-pressed="${formulado}">Formulado NPK</button>
           </div>
         </div>
-        ${
-          formulado
-            ? `<p class="bloco-dica texto">As doses acima são de nutriente puro. Aqui o guia procura, para cada parada, o adubo formulado que tem a relação mais próxima entre nitrogênio, fósforo e potássio e diz quanto pesar, com mais duas opções para o caso de a loja não ter a primeira. Para a fórmula fechar sozinha, aceita até ${fmt(P.TOLERANCIA * 100, 0)}% a mais ou a menos de um nutriente. Os três números do saco são as porcentagens de N, P<sub>2</sub>O<sub>5</sub> e K<sub>2</sub>O. Quando a fórmula não fecha a dose, o que falta vai em adubo simples.</p>`
-            : `<p class="bloco-dica texto">As doses acima são de nutriente puro. Escolha o adubo que você compra e veja quanto pesar. Os teores são os mínimos garantidos por lei, que o manual traz no apêndice (p. 344 a 348).</p>`
-        }
-        <div class="grade-campos escolha-fontes">
-          <div class="campo"><label for="fonte-N"><span class="campo-nome">${rotFonte('nitrogênio')}</span></label><select id="fonte-N" data-fonte="N">${opts('N', f.N)}</select></div>
-          <div class="campo"><label for="fonte-P"><span class="campo-nome">${rotFonte('fósforo')}</span></label><select id="fonte-P" data-fonte="P">${opts('P', f.P)}</select></div>
-          <div class="campo"><label for="fonte-K"><span class="campo-nome">${rotFonte('potássio')}</span></label><select id="fonte-K" data-fonte="K">${opts('K', f.K)}</select></div>
-        </div>
-        ${obsFontes.map((t) => `<p class="nota">${esc(t)}</p>`).join('')}
+        <p class="bloco-dica texto">${formulado ? 'A fórmula mais próxima da dose em cada parada, e quanto pesar.' : 'Quanto pesar de cada adubo, em cada parada.'}</p>
         ${
           linhas.length
             ? `<div class="tabela-rolagem" tabindex="0" role="region" aria-label="Adubo comercial por parada"><table class="tabela produtos"><caption class="so-leitor">Adubo comercial por parada</caption><thead><tr><th scope="col">Quando</th><th scope="col">Quanto pesar</th></tr></thead><tbody>${linhas.join('')}</tbody></table></div>
                ${resumo ? `<h3 class="tema-titulo">Soma do período mostrado</h3><ul class="prod-lista prod-resumo">${resumo}</ul>` : ''}`
             : '<p class="texto">Não há adubação pela frente no período mostrado.</p>'
         }
+        <h3 class="tema-titulo saco-subtitulo">${formulado ? 'Adubo simples para completar' : 'Trocar os adubos'}</h3>
+        <div class="grade-campos escolha-fontes">
+          <div class="campo"><label for="fonte-N"><span class="campo-nome">${rotFonte('nitrogênio')}</span></label><select id="fonte-N" data-fonte="N">${opts('N', f.N)}</select></div>
+          <div class="campo"><label for="fonte-P"><span class="campo-nome">${rotFonte('fósforo')}</span></label><select id="fonte-P" data-fonte="P">${opts('P', f.P)}</select></div>
+          <div class="campo"><label for="fonte-K"><span class="campo-nome">${rotFonte('potássio')}</span></label><select id="fonte-K" data-fonte="K">${opts('K', f.K)}</select></div>
+        </div>
+        ${obsFontes.map((t) => `<p class="nota">${esc(t)}</p>`).join('')}
+        <h3 class="tema-titulo saco-subtitulo">Como ler</h3>
         ${
-          formulado && usouFormula
-            ? `<ul class="lista-simples texto">
-                 ${usouComplemento || usouExcesso ? `<li><span class="etiqueta">Conta nossa</span> O manual ensina a escolher a fórmula pela relação entre os nutrientes. Aceitar até ${fmt(P.TOLERANCIA * 100, 0)}% a mais ou a menos de um nutriente e completar com adubo simples o que a fórmula não cobre são escolhas do guia.</li>` : ''}
+          formulado
+            ? `<p class="texto">As doses do rótulo são de nutriente puro. Os três números do saco são as porcentagens de N, P<sub>2</sub>O<sub>5</sub> e K<sub>2</sub>O. Para cada parada o guia procura a fórmula com a relação mais próxima entre os três e mostra mais duas, para o caso de a loja não ter a primeira. Quando a fórmula não fecha a dose, o que falta vai em adubo simples.</p>
+               ${
+                 usouFormula
+                   ? `<ul class="lista-simples texto">
+                 <li><span class="etiqueta">Conta nossa</span> O manual ensina a escolher a fórmula pela relação entre os nutrientes. Aceitar até ${fmt(P.TOLERANCIA * 100, 0)}% a mais ou a menos de um nutriente e completar com adubo simples o que a fórmula não cobre são escolhas do guia.</li>
                  <li>Na loja, outra fórmula com a mesma relação serve: muda só o peso. Fórmula mais concentrada pode não trazer enxofre.</li>
                  <li>Usar sempre a mesma fórmula, sem acompanhamento de um agrônomo, pode desequilibrar a adubação.</li>
-               </ul>
+               </ul>`
+                   : ''
+               }
                <p class="fonte">Manual, cap. 6, p. 33 a 35. Os dois avisos e parte das fórmulas: Embrapa (Veloso, Botelho e Rodrigues, 2020), cap. 9. As demais fórmulas são as correntes no comércio</p>`
-            : ''
+            : `<p class="texto">As doses do rótulo são de nutriente puro. Aqui elas viram quilos do adubo que você compra. Os teores são os mínimos garantidos por lei, que o manual traz no apêndice (p. 344 a 348).</p>`
         }
       </section>`;
   }
@@ -1352,9 +1359,10 @@
     const { plano, cal } = ultimo;
     $('#resultado').innerHTML = `
       ${receitaHTML(plano, cal)}
+      ${sacoHTML(plano, cal)}
+      ${explicacoesHTML(plano, cal)}
       ${modoDeUsarHTML(plano, cal)}
       ${manejoHTML(plano)}
-      ${sacoHTML(plano, cal)}
       ${laudoHTML(plano)}
       ${estimativasHTML()}`;
   }

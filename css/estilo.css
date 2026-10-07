@@ -1656,6 +1656,9 @@ details.mais > :not(summary) {
 .escolha-fontes {
   margin: 14px 0 6px;
 }
+.saco-subtitulo {
+  margin-top: 32px;
+}
 .prod-lista {
   list-style: none;
   margin: 0;
