@@ -1669,6 +1669,25 @@ details.mais > :not(summary) {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.prod-outras {
+  margin-top: 8px;
+}
+.prod-outras summary {
+  display: inline-block;
+  min-height: 44px;
+  line-height: 44px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.prod-outras .obs {
+  display: block;
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: var(--tinta-2);
+}
 .produtos td .nota {
   margin: 4px 0 0;
 }

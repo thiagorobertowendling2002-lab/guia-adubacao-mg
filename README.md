@@ -44,9 +44,9 @@ O manual de 1999 não fala de pitaya. As doses, o calendário e o manejo dela v�
 
 ## Adubo formulado NPK
 
-O método é o do capítulo 6 do manual (p. 33 a 35): dividir as doses pela menor para achar a relação (20-80-40 dá 1:4:2), procurar a fórmula com a mesma relação (4-16-8) e dividir a dose pelo teor (500 kg/ha). A lista de fórmulas junta as que o capítulo cita (4-16-8, 10-10-20, 10-30-20, 17-17-17, 24-8-12, 27-3-21), as do capítulo 9 de VELOSO, BOTELHO e RODRIGUES (Embrapa, 2020: 10-10-10, 20-5-20, 4-20-20, 18-18-18, 10-28-20, 10-20-5) e a 20-00-20 da cartilha da pitaya. Para acrescentar uma fórmula, é uma linha em `js/produtos.js`.
+O método é o do capítulo 6 do manual (p. 33 a 35): dividir as doses pela menor para achar a relação (20-80-40 dá 1:4:2), procurar a fórmula com a mesma relação (4-16-8) e dividir a dose pelo teor (500 kg/ha). A lista de fórmulas junta as que o capítulo cita (4-16-8, 10-10-20, 10-30-20, 17-17-17, 24-8-12, 27-3-21), as do capítulo 9 de VELOSO, BOTELHO e RODRIGUES (Embrapa, 2020: 10-10-10, 20-5-20, 4-20-20, 18-18-18, 10-28-20, 10-20-5), a 20-00-20 da cartilha da pitaya e as correntes no comércio (4-14-8, 8-28-16, 0-20-20, 20-00-30 e outras), que não vêm dessas fontes. Cada parada mostra a melhor fórmula e até duas outras que servem, para o caso de a loja não ter a primeira. Para acrescentar uma fórmula, é uma linha em `js/produtos.js`.
 
-Quando nenhuma fórmula tem a relação exata, o guia usa a que deixa menos nutriente faltando, aceita que um nutriente passe da dose em **até 10%** para a fórmula fechar sozinha, e completa o que ainda faltar com adubo simples. Essas duas escolhas são do guia, não do manual, e a tela avisa quando foram usadas. Parada com um nutriente só (cobertura de nitrogênio, por exemplo) fica no adubo simples.
+Quando nenhuma fórmula tem a relação exata, o guia usa a que deixa menos nutriente faltando, aceita que um nutriente fique **até 10% acima ou abaixo** da dose para a fórmula fechar sozinha, e completa o que faltar além disso com adubo simples. Essas duas escolhas são do guia, não do manual, e a tela avisa quando foram usadas. Parada com um nutriente só (cobertura de nitrogênio, por exemplo) fica no adubo simples.
 
 ## Escolhas e estimativas (leia antes de confiar numa data)
 

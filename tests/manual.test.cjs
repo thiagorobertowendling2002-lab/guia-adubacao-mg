@@ -385,9 +385,11 @@ test('formulado: nunca escolhe fórmula com nutriente que a dose não pede', () 
   const semK = P.formulado({ N: 20, P2O5: 80, K2O: 0 }, ESCOLHA);
   assert.ok(!semK.formula || semK.formula.K2O === 0);
   const semP = P.formulado({ N: 70, P2O5: 0, K2O: 40 }, ESCOLHA);
-  assert.equal(semP.formula.id, 'npk-20-00-20');
-  perto(semP.kg, 200, 0.001);
-  perto(semP.complemento.itens[0].kg, 30 / 0.44, 0.001);
+  assert.equal(semP.formula.P2O5, 0);
+  for (const o of semP.outras) assert.equal(o.formula.P2O5, 0);
+  // dose só de P e K usa fórmula sem N
+  const semN = P.formulado({ N: 0, P2O5: 75, K2O: 90 }, ESCOLHA);
+  assert.equal(semN.formula.N, 0);
 });
 
 test('formulado: aceita até 10% a mais de um nutriente para a fórmula fechar sozinha', () => {
@@ -402,7 +404,16 @@ test('formulado: aceita até 10% a mais de um nutriente para a fórmula fechar s
   for (const n of ['N', 'P2O5', 'K2O']) assert.ok(s.excesso[n] <= { N: 15, P2O5: 80, K2O: 40 }[n] * P.TOLERANCIA + 1e-6, n);
 });
 
-test('formulado: fórmula mais complemento entregam a dose, com excesso de no máximo 10% por nutriente', () => {
+test('formulado: falta de até 10% de um nutriente não pede complemento', () => {
+  // 4-16-8 a 500 kg/ha entrega 40 de K2O; pedir 43 deixa 3 a menos (7%), melhor que esticar e sobrar N e P
+  const r = P.formulado({ N: 20, P2O5: 80, K2O: 43 }, ESCOLHA);
+  assert.equal(r.formula.id, 'npk-04-16-08');
+  perto(r.kg, 500, 0.001);
+  perto(r.abaixo.K2O, 3, 0.001);
+  assert.equal(r.complemento.itens.length, 0);
+});
+
+test('formulado: fórmula mais complemento entregam a dose, com no máximo 10% a mais ou a menos por nutriente', () => {
   const doses = [
     [20, 80, 40], [30, 90, 60], [10, 120, 30], [140, 0, 80], [4, 0, 15], [40, 20, 40], [25, 70, 0], [100, 30, 100], [7, 33, 12]
   ];
@@ -413,17 +424,29 @@ test('formulado: fórmula mais complemento entregam a dose, com excesso de no m�
       if (r.formula) for (const n of Object.keys(dado)) dado[n] += (r.kg * r.formula[n]) / 100;
       for (const it of r.complemento.itens) for (const n of Object.keys(dado)) dado[n] += (it.kg * (it.produto[n] || 0)) / 100;
       const dentro = (n, pedido) => {
-        assert.ok(dado[n] >= pedido - 1e-6, `${N}-${P2O5}-${K2O} falta ${n}`);
+        assert.ok(dado[n] >= pedido * (1 - P.TOLERANCIA) - 1e-6, `${N}-${P2O5}-${K2O} falta ${n}`);
         assert.ok(dado[n] <= pedido * (1 + P.TOLERANCIA) + 1e-6, `${N}-${P2O5}-${K2O} sobra ${n}`);
-        perto(dado[n] - pedido, r.excesso[n], 1e-6, `${N}-${P2O5}-${K2O} excesso ${n}`);
+        perto(dado[n] - pedido, r.excesso[n] - r.abaixo[n], 1e-6, `${N}-${P2O5}-${K2O} desvio ${n}`);
       };
       dentro('P2O5', P2O5);
       dentro('K2O', K2O);
       // com MAP, o N que vem no fosfato pode passar do que falta; fora isso a dose de N fecha na tolerância
-      if (fP === 'map') assert.ok(dado.N >= N - 1e-6, `${N}-${P2O5}-${K2O} N`);
+      if (fP === 'map') assert.ok(dado.N >= N * (1 - P.TOLERANCIA) - 1e-6, `${N}-${P2O5}-${K2O} N`);
       else dentro('N', N);
     }
   }
+});
+
+test('formulado: a escolha muda com a dose e traz outras opções em ordem', () => {
+  const doses = [[15, 100, 35], [20, 70, 40], [30, 90, 60], [70, 0, 70], [60, 0, 90], [50, 30, 50], [40, 40, 50], [0, 60, 60]];
+  const escolhidas = new Set(doses.map(([N, P2O5, K2O]) => P.formulado({ N, P2O5, K2O }, ESCOLHA).formula.id));
+  assert.ok(escolhidas.size >= 6, `só ${escolhidas.size} fórmulas diferentes`);
+  const r = P.formulado({ N: 20, P2O5: 70, K2O: 40 }, ESCOLHA);
+  assert.equal(r.formula.id, 'npk-08-28-16');
+  perto(r.kg, 250, 0.001);
+  assert.equal(r.complemento.itens.length, 0);
+  assert.ok(r.outras.length >= 1 && r.outras.length <= 2);
+  assert.ok(r.outras.every((o) => o.cobre >= 0.7 && o.cobre <= r.cobre + 1e-9 && o.formula.id !== r.formula.id));
 });
 
 test('item 7.2.4: toda fórmula tem teores inteiros e soma de 24% ou mais', () => {

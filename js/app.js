@@ -1212,7 +1212,7 @@
       const item = (it) => {
         let detalhe;
         if (porHa) {
-          detalhe = `${fmt(it.kg, 1)} kg/ha`;
+          detalhe = `${fmt(it.kg, formulado ? 0 : 1)} kg/ha`;
           if (plano.cultura.tipo === 'anual') detalhe += ` · ${fmt(P.gramasPorMetro(it.kg, entre), 1)} g por metro de sulco`;
           else if (dens) detalhe += ` · ${fmt(P.gramasPorPlanta(it.kg, dens), 0)} g por planta`;
         } else {
@@ -1226,19 +1226,32 @@
       if (completam.length) usouComplemento = true;
       if (formulado && form.formula) usouFormula = true;
       let extra = '';
+      let outras = '';
       if (formulado && form.formula) {
         extra += `<p class="nota">Relação ${form.relacao.map((x) => fmt(x, 1)).join(' : ')} de N, P<sub>2</sub>O<sub>5</sub> e K<sub>2</sub>O.</p>`;
-        const passa = Object.keys(NOME_NUTR).filter((n) => form.excesso[n] >= (porHa ? 0.05 : 0.5));
-        if (passa.length) {
+        const desvio = (campo, rotulo, palavra) => {
+          const quais = Object.keys(NOME_NUTR).filter((n) => form[campo][n] >= (porHa ? 0.05 : 0.5));
+          if (!quais.length) return;
           usouExcesso = true;
-          extra += `<p class="nota">Passa um pouco da dose: ${passa.map((n) => `${fmt(form.excesso[n], porHa ? 1 : 0)} ${porHa ? 'kg/ha' : 'g'} de ${NOME_NUTR[n]} a mais (${fmt((form.excesso[n] / dose[n]) * 100, 0)}%)`).join(' e ')}.</p>`;
-        }
+          extra += `<p class="nota">${rotulo}: ${quais.map((n) => `${fmt(form[campo][n], porHa ? 1 : 0)} ${porHa ? 'kg/ha' : 'g'} de ${NOME_NUTR[n]} ${palavra} (${fmt((form[campo][n] / dose[n]) * 100, 0)}%)`).join(' e ')}.</p>`;
+        };
+        desvio('excesso', 'Passa um pouco da dose', 'a mais');
+        desvio('abaixo', 'Fica um pouco abaixo da dose', 'a menos');
         if (completam.length) extra += `<p class="prod-rotulo">Completar com</p><ul class="prod-lista">${completam.map(item).join('')}</ul>`;
+        if (form.outras.length) {
+          const outra = (o) => {
+            const comp = o.complemento.itens.filter(visivel);
+            const fora = Object.keys(NOME_NUTR).some((n) => o.excesso[n] + o.abaixo[n] >= (porHa ? 0.05 : 0.5));
+            const obs = comp.length ? `Completar com ${comp.map((it) => `${it.produto.nome.toLowerCase()} ${fmt(it.kg, 0)} ${porHa ? 'kg/ha' : 'g'}`).join(' e ')}.` : fora ? 'Fecha sozinha, com pequena diferença da dose.' : 'Fecha sozinha.';
+            return item({ produto: o.formula, kg: o.kg }).replace('</li>', `<span class="obs">${esc(obs)}</span></li>`);
+          };
+          outras = `<details class="prod-outras"><summary>Se não achar essa fórmula</summary><ul class="prod-lista">${form.outras.map(outra).join('')}</ul></details>`;
+        }
       } else if (formulado) {
         extra += `<p class="nota">${form.nutrientes.length === 1 ? `Esta parada leva só ${NOME_NUTR[form.nutrientes[0]]}: não há fórmula para isso, use o adubo simples.` : `Esta parada leva só ${form.nutrientes.map((n) => NOME_NUTR[n]).join(' e ')}, e nenhuma fórmula da lista serve: use os adubos simples.`}</p>`;
       }
       const p = partes(m.data);
-      return `<tr><th scope="row">${String(p.d).padStart(2, '0')} ${MES3[p.m - 1]} ${p.a}<span class="obs">${esc(m.titulo)}</span></th><td><ul class="prod-lista">${principais.map(item).join('')}</ul>${extra}${mix.enxofreKg > 0 ? `<p class="nota">Leva ${fmt(mix.enxofreKg, 1)} ${porHa ? 'kg/ha' : 'g'} de enxofre junto.</p>` : ''}</td></tr>`;
+      return `<tr><th scope="row">${String(p.d).padStart(2, '0')} ${MES3[p.m - 1]} ${p.a}<span class="obs">${esc(m.titulo)}</span></th><td><ul class="prod-lista">${principais.map(item).join('')}</ul>${extra}${mix.enxofreKg > 0 ? `<p class="nota">Leva ${fmt(mix.enxofreKg, 1)} ${porHa ? 'kg/ha' : 'g'} de enxofre junto.</p>` : ''}${outras}</td></tr>`;
     });
     const resumo = Object.values(tot)
       .filter((t) => t.kg >= 0.5)
@@ -1256,7 +1269,7 @@
         </div>
         ${
           formulado
-            ? `<p class="bloco-dica texto">As doses acima são de nutriente puro. Aqui o guia procura, para cada parada, o adubo formulado que tem a relação mais próxima entre nitrogênio, fósforo e potássio e diz quanto pesar. Para a fórmula fechar sozinha, aceita até ${fmt(P.TOLERANCIA * 100, 0)}% a mais de um nutriente. Os três números do saco são as porcentagens de N, P<sub>2</sub>O<sub>5</sub> e K<sub>2</sub>O. Quando a fórmula não fecha a dose, o que falta vai em adubo simples.</p>`
+            ? `<p class="bloco-dica texto">As doses acima são de nutriente puro. Aqui o guia procura, para cada parada, o adubo formulado que tem a relação mais próxima entre nitrogênio, fósforo e potássio e diz quanto pesar, com mais duas opções para o caso de a loja não ter a primeira. Para a fórmula fechar sozinha, aceita até ${fmt(P.TOLERANCIA * 100, 0)}% a mais ou a menos de um nutriente. Os três números do saco são as porcentagens de N, P<sub>2</sub>O<sub>5</sub> e K<sub>2</sub>O. Quando a fórmula não fecha a dose, o que falta vai em adubo simples.</p>`
             : `<p class="bloco-dica texto">As doses acima são de nutriente puro. Escolha o adubo que você compra e veja quanto pesar. Os teores são os mínimos garantidos por lei, que o manual traz no apêndice (p. 344 a 348).</p>`
         }
         <div class="grade-campos escolha-fontes">
@@ -1274,11 +1287,11 @@
         ${
           formulado && usouFormula
             ? `<ul class="lista-simples texto">
-                 ${usouComplemento || usouExcesso ? `<li><span class="etiqueta">Conta nossa</span> O manual ensina a escolher a fórmula pela relação entre os nutrientes. Aceitar até ${fmt(P.TOLERANCIA * 100, 0)}% a mais de um nutriente e completar com adubo simples o que a fórmula não cobre são escolhas do guia.</li>` : ''}
+                 ${usouComplemento || usouExcesso ? `<li><span class="etiqueta">Conta nossa</span> O manual ensina a escolher a fórmula pela relação entre os nutrientes. Aceitar até ${fmt(P.TOLERANCIA * 100, 0)}% a mais ou a menos de um nutriente e completar com adubo simples o que a fórmula não cobre são escolhas do guia.</li>` : ''}
                  <li>Na loja, outra fórmula com a mesma relação serve: muda só o peso. Fórmula mais concentrada pode não trazer enxofre.</li>
                  <li>Usar sempre a mesma fórmula, sem acompanhamento de um agrônomo, pode desequilibrar a adubação.</li>
                </ul>
-               <p class="fonte">Manual, cap. 6, p. 33 a 35. Fórmulas além das do manual e os dois avisos: Embrapa (Veloso, Botelho e Rodrigues, 2020), cap. 9</p>`
+               <p class="fonte">Manual, cap. 6, p. 33 a 35. Os dois avisos e parte das fórmulas: Embrapa (Veloso, Botelho e Rodrigues, 2020), cap. 9. As demais fórmulas são as correntes no comércio</p>`
             : ''
         }
       </section>`;

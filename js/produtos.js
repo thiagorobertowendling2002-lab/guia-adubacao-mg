@@ -70,7 +70,8 @@
   /*
    * Adubos formulados (N-P2O5-K2O em %). O método é o do Cap. 6 (p. 33 a 35): achar a fórmula com a mesma relação
    * entre os nutrientes e dividir a dose pelo teor. As fórmulas "manual" são as que o capítulo cita; as "embrapa" vêm de
-   * Veloso, Botelho e Rodrigues (Embrapa Amazônia Oriental, 2020, cap. 9); a 20-00-20 é a da cartilha da pitaya (Emater-MG, 2023).
+   * Veloso, Botelho e Rodrigues (Embrapa Amazônia Oriental, 2020, cap. 9); a 20-00-20 é a da cartilha da pitaya (Emater-MG, 2023);
+   * as "comercio" são fórmulas correntes nas lojas, acrescentadas para a escolha não ficar presa a poucas opções.
    * Item 7.2.4 do manual: teores em números inteiros, com soma de 24% ou mais.
    */
   const NUTR = ['N', 'P2O5', 'K2O'];
@@ -91,7 +92,38 @@
     formula(18, 18, 18, 'embrapa'),
     formula(10, 28, 20, 'embrapa'),
     formula(10, 20, 5, 'embrapa'),
-    formula(20, 0, 20, 'emater')
+    formula(20, 0, 20, 'emater'),
+    // comuns no comércio; não vêm do manual nem dos capítulos da Embrapa
+    formula(4, 14, 8, 'comercio'),
+    formula(4, 30, 10, 'comercio'),
+    formula(4, 30, 16, 'comercio'),
+    formula(5, 20, 20, 'comercio'),
+    formula(5, 25, 15, 'comercio'),
+    formula(5, 25, 25, 'comercio'),
+    formula(5, 30, 15, 'comercio'),
+    formula(8, 20, 20, 'comercio'),
+    formula(8, 24, 12, 'comercio'),
+    formula(8, 28, 16, 'comercio'),
+    formula(2, 20, 20, 'comercio'),
+    formula(0, 20, 20, 'comercio'),
+    formula(0, 25, 25, 'comercio'),
+    formula(0, 30, 15, 'comercio'),
+    formula(0, 20, 10, 'comercio'),
+    formula(13, 13, 13, 'comercio'),
+    formula(15, 15, 15, 'comercio'),
+    formula(12, 6, 12, 'comercio'),
+    formula(14, 7, 28, 'comercio'),
+    formula(19, 4, 19, 'comercio'),
+    formula(20, 10, 10, 'comercio'),
+    formula(20, 10, 20, 'comercio'),
+    formula(25, 5, 20, 'comercio'),
+    formula(20, 0, 10, 'comercio'),
+    formula(20, 0, 30, 'comercio'),
+    formula(25, 0, 25, 'comercio'),
+    formula(30, 0, 10, 'comercio'),
+    formula(30, 0, 20, 'comercio'),
+    formula(15, 0, 30, 'comercio'),
+    formula(10, 0, 30, 'comercio')
   ];
 
   /** Relação entre os nutrientes: cada dose dividida pela menor que não é zero (20-80-40 dá 1:4:2). */
@@ -101,57 +133,81 @@
     return v.map((x) => (x > 0 ? arred(x / menor, 1) : 0));
   }
 
-  /** Quanto um nutriente pode passar da dose para a fórmula fechar sozinha (escolha nossa, não do manual). */
+  /** Quanto um nutriente pode ficar acima ou abaixo da dose para a fórmula fechar sozinha (escolha nossa, não do manual). */
   const TOLERANCIA = 0.1;
+
+  /** Uma quantidade `kg` da fórmula diante da dose: o que falta completar, o que sobra e o que fica um pouco abaixo. */
+  function pesar(f, d, kg) {
+    const resto = {};
+    const excesso = {};
+    const abaixo = {};
+    let falta = 0;
+    let desvio = 0;
+    NUTR.forEach((n) => {
+      const r = d[n] - (kg * f[n]) / 100;
+      const pouco = r > 1e-6 && r <= d[n] * TOLERANCIA + 1e-9;
+      resto[n] = r > 1e-6 && !pouco ? r : 0;
+      abaixo[n] = pouco ? r : 0;
+      excesso[n] = r < -1e-6 ? -r : 0;
+      falta += resto[n];
+      desvio += abaixo[n] + excesso[n];
+    });
+    return { formula: f, kg, resto, excesso, abaixo, falta, desvio };
+  }
+
+  /** Ordem de preferência: menos nutriente por completar, depois menos desvio da dose, depois menos quilos. */
+  const preferir = (a, b) => {
+    if (Math.abs(a.falta - b.falta) > 1e-6) return a.falta - b.falta;
+    if (Math.abs(a.desvio - b.desvio) > 1e-6) return a.desvio - b.desvio;
+    return a.kg - b.kg;
+  };
+
+  /** Como uma fórmula atende a dose, na melhor das quantidades possíveis. Nula se traz nutriente que a dose não pede. */
+  function avaliar(f, d) {
+    if (NUTR.some((n) => f[n] > 0 && !(d[n] > 0))) return null;
+    // quantidades candidatas: onde a fórmula fecha cada nutriente e onde cada um entra na tolerância por baixo;
+    // valem as que não passam de nenhuma dose além da tolerância
+    const com = NUTR.filter((n) => f[n] > 0);
+    const fecha = com.map((n) => quilosDeProduto(d[n], f[n]));
+    const teto = Math.min(...fecha) * (1 + TOLERANCIA);
+    const pontos = fecha.concat(com.map((n) => quilosDeProduto(d[n] * (1 - TOLERANCIA), f[n])));
+    return pontos
+      .filter((x) => x <= teto + 1e-9)
+      .map((kg) => pesar(f, d, kg))
+      .sort(preferir)[0];
+  }
 
   /**
    * Adubo formulado para uma dose de N, P2O5 e K2O.
-   * Cada fórmula entra na quantidade que fecha o maior número de nutrientes sem que nenhum passe da dose em mais de
-   * TOLERANCIA; fórmula com nutriente que a dose não pede fica de fora. Ganha a que deixa menos nutriente por
-   * completar; no empate, a de menor excesso e depois a mais concentrada.
-   * O que falta vai em adubo simples (conta nossa, como a tolerância: o manual só trata da relação exata).
+   * Cada fórmula entra na quantidade que deixa menos por completar sem que nenhum nutriente passe da dose em mais de
+   * TOLERANCIA; fórmula com nutriente que a dose não pede fica de fora. Falta de até TOLERANCIA da dose não se completa.
+   * Ganha a fórmula que deixa menos nutriente por completar; no empate, a de menor desvio e depois a mais concentrada.
+   * O que falta além disso vai em adubo simples (conta nossa, como a tolerância: o manual só trata da relação exata).
+   * `outras` traz até duas fórmulas seguintes na ordem, desde que cubram pelo menos 70% da dose.
    * Dose com um nutriente só não tem fórmula: devolve `formula: null` e a mistura simples.
    */
   function formulado(dose, escolha) {
     const d = { N: dose.N || 0, P2O5: dose.P2O5 || 0, K2O: dose.K2O || 0 };
     const pedidos = NUTR.filter((n) => d[n] > 0);
-    let melhor = null;
-    if (pedidos.length > 1) {
-      FORMULAS.forEach((f) => {
-        if (NUTR.some((n) => f[n] > 0 && !(d[n] > 0))) return;
-        // pontos em que a fórmula fecha cada nutriente; vale o maior que ainda cabe na tolerância
-        const pontos = NUTR.filter((n) => f[n] > 0).map((n) => quilosDeProduto(d[n], f[n]));
-        const teto = Math.min(...pontos) * (1 + TOLERANCIA);
-        const kg = Math.max(...pontos.filter((x) => x <= teto + 1e-9));
-        const resto = {};
-        const excesso = {};
-        let falta = 0;
-        let sobra = 0;
-        NUTR.forEach((n) => {
-          const r = d[n] - (kg * f[n]) / 100;
-          resto[n] = r > 1e-6 ? r : 0;
-          excesso[n] = r < -1e-6 ? -r : 0;
-          falta += resto[n];
-          sobra += excesso[n];
-        });
-        const empata = (a, b) => Math.abs(a - b) <= 1e-6;
-        if (
-          !melhor ||
-          falta < melhor.falta - 1e-6 ||
-          (empata(falta, melhor.falta) && (sobra < melhor.sobra - 1e-6 || (empata(sobra, melhor.sobra) && kg < melhor.kg)))
-        ) {
-          melhor = { formula: f, kg, resto, excesso, falta, sobra };
-        }
-      });
-    }
+    const total = d.N + d.P2O5 + d.K2O;
+    const ordem = pedidos.length > 1 ? FORMULAS.map((f) => avaliar(f, d)).filter(Boolean).sort(preferir) : [];
+    const melhor = ordem[0] || null;
     const complemento = mistura(melhor ? melhor.resto : d, escolha);
+    const outras = ordem
+      .slice(1)
+      .filter((o) => o.falta <= total * 0.3)
+      .slice(0, 2)
+      .map((o) => ({ formula: o.formula, kg: o.kg, excesso: o.excesso, abaixo: o.abaixo, cobre: 1 - o.falta / total, complemento: mistura(o.resto, escolha) }));
     return {
       formula: melhor ? melhor.formula : null,
       kg: melhor ? melhor.kg : 0,
       relacao: pedidos.length ? relacao(d) : [0, 0, 0],
       nutrientes: pedidos,
+      cobre: melhor ? 1 - melhor.falta / total : 0,
       excesso: melhor ? melhor.excesso : { N: 0, P2O5: 0, K2O: 0 },
+      abaixo: melhor ? melhor.abaixo : { N: 0, P2O5: 0, K2O: 0 },
       complemento,
+      outras,
       totalKg: (melhor ? melhor.kg : 0) + complemento.totalKg,
       enxofreKg: complemento.enxofreKg
     };
